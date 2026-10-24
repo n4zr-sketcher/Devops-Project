@@ -29,6 +29,7 @@ terraform.rc
 # ---------------------------------------------------------------------------
 *.auto.tfvars
 secrets/
+secrets_auto/
 .env
 .env.*
 !.env.example
@@ -43,6 +44,7 @@ id_rsa
 id_rsa.*
 id_ed25519
 id_ed25519.*
+ssh_host_*
 known_hosts
 *.ppk
 *.jks

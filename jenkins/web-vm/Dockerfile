@@ -23,12 +23,14 @@ COPY authorized_keys /home/azureuser/.ssh/authorized_keys
 RUN chmod 600 /home/azureuser/.ssh/authorized_keys && \
     chown -R azureuser:azureuser /home/azureuser/.ssh
 
-# Generate fixed ed25519 host key at build time so it is persistent across container restarts
-RUN ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N "" -C "web-vm"
+# Use persistent ed25519 host keys so known_hosts never changes
+COPY ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key
+COPY ssh_host_ed25519_key.pub /etc/ssh/ssh_host_ed25519_key.pub
+RUN chmod 600 /etc/ssh/ssh_host_ed25519_key && chmod 644 /etc/ssh/ssh_host_ed25519_key.pub
 
 # Configure systemctl shim for deploy.sh
 COPY systemctl-shim.sh /usr/local/bin/systemctl
-RUN chmod +x /usr/local/bin/systemctl && cp /usr/local/bin/systemctl /bin/systemctl
+RUN sed -i 's/\r$//' /usr/local/bin/systemctl && chmod +x /usr/local/bin/systemctl && cp /usr/local/bin/systemctl /bin/systemctl
 
 # Setup initial Nginx configuration (matches cloud-init.yml.tftpl)
 RUN mkdir -p /var/www/app /var/www/releases && \
@@ -64,7 +66,7 @@ RUN echo '<!doctype html><html lang="en"><head><meta charset="utf-8"/><title>Doc
     chmod -R 755 /var/www/app
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80 22
 

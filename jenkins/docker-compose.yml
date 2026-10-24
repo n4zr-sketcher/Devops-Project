@@ -23,8 +23,9 @@ services:
       - "50000:50000"  # Inbound build agents
     volumes:
       - jenkins_home:/var/jenkins_home
+      - ./secrets_auto:/var/jenkins_home/secrets_auto:ro
     environment:
-      - JAVA_OPTS=-Xmx1024m
+      - JAVA_OPTS=-Xmx1024m -Djenkins.install.runSetupWizard=false
       - TZ=UTC
     networks:
       - cicd-net

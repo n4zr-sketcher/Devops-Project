@@ -1,0 +1,355 @@
+================================================================================
+  END-TO-END DEVOPS CI/CD PROJECT - STEP-BY-STEP SETUP & RUN GUIDE (WINDOWS 10)
+================================================================================
+
+Repository  : https://github.com/n4zr-sketcher/Devops-Project.git
+Project Path: C:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup
+              (or C:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project)
+
+This project runs a complete automated CI/CD pipeline locally on your machine 
+using Docker (100% Free - no Azure account required), or optionally in the 
+Microsoft Azure cloud using Terraform.
+
+Pipeline Flow:
+Code Push -> GitHub -> Jenkins Controller (localhost:8080) -> Test & Build 
+          -> Deploy via SSH/SCP -> Nginx Web Server (localhost:8000)
+
+================================================================================
+CURRENT STATUS & PRE-CONFIGURED ITEMS ON YOUR LAPTOP
+================================================================================
+1. Git: Installed (v2.56.0)
+2. Node.js: Installed (v26.10.0)
+3. Terraform: Installed (v1.16.6)
+4. OpenSSH: Installed (OpenSSH_for_Windows_9.5p1)
+5. SSH Key Pair: Pre-generated at C:\Users\Dell\.ssh\azure_cicd_vm
+6. Web VM Authorized Keys: Pre-configured to accept your SSH key
+7. Docker Desktop: Installed at C:\Program Files\Docker\Docker\Docker Desktop.exe
+
+================================================================================
+⚡ FASTEST WAY: 1-CLICK AUTOMATION (RECOMMENDED)
+================================================================================
+You do NOT need to configure Jenkins manually! We have automated everything.
+
+Just open PowerShell in this directory and run:
+   powershell -ExecutionPolicy Bypass -File .\automate.ps1
+
+What this single command does automatically:
+1. Starts Docker Desktop if not already running.
+2. Builds and starts Jenkins & the simulated Ubuntu Web VM.
+3. Automatically unlocks Jenkins (bypasses setup wizard).
+4. Pre-configures admin account (admin / admin123).
+5. Injects the 4 environment variables (VM_IP, VM_USER, etc.).
+6. Injects the SSH private key & known hosts credentials into Jenkins.
+7. Automatically creates the 'devops-project-pipeline' job.
+8. Automatically triggers Build #1 and monitors it to completion.
+9. Automatically opens http://localhost:8000 in your browser!
+
+Everything is 100% hands-free.
+
+================================================================================
+PART A: LOCAL DOCKER MODE (MANUAL STEP-BY-STEP REFERENCE)
+================================================================================
+
+--------------------------------------------------------------------------------
+STEP 0: START DOCKER DESKTOP
+--------------------------------------------------------------------------------
+1. Launch Docker Desktop from your Windows Start Menu, OR run in PowerShell:
+   Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+
+2. Wait 1-2 minutes until Docker Desktop finishes launching and shows 
+   "Engine running" (green icon in bottom-left).
+
+3. Verify Docker is ready by opening PowerShell and running:
+   docker ps
+
+   If you see table headers (CONTAINER ID, IMAGE, COMMAND...), Docker is ready!
+
+   * Note: If Docker asks for a WSL 2 kernel update, open an Administrator PowerShell
+     and run:
+     wsl --update
+     then restart Docker Desktop.
+
+--------------------------------------------------------------------------------
+STEP 1: START THE LOCAL CI/CD ENVIRONMENT (DOCKER COMPOSE)
+--------------------------------------------------------------------------------
+Open PowerShell and navigate to the project's jenkins directory:
+
+cd "C:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\jenkins"
+# (If working in Devops-Project instead, run:)
+# cd "C:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project\jenkins"
+
+Now build and start the containers in detached mode:
+docker compose up -d --build
+
+This builds and launches two containers on an isolated Docker network (cicd-net):
+- jenkins-cicd : Jenkins LTS controller running on http://localhost:8080
+- web-vm       : Ubuntu 22.04 Nginx web server running on http://localhost:8000
+
+Check running containers:
+docker ps
+
+Test the placeholder web server in your browser:
+- Homepage    : http://localhost:8000
+- Health Check: http://localhost:8000/health (returns "ok")
+
+--------------------------------------------------------------------------------
+STEP 2: UNLOCK & SETUP JENKINS
+--------------------------------------------------------------------------------
+1. In PowerShell, copy the Jenkins initial administrator password directly to 
+   your clipboard:
+   docker exec jenkins-cicd cat /var/jenkins_home/secrets/initialAdminPassword | Set-Clipboard
+
+   (To view it on screen as well, run:)
+   docker exec jenkins-cicd cat /var/jenkins_home/secrets/initialAdminPassword
+
+2. Open your browser and navigate to:
+   http://localhost:8080
+
+3. Paste the password into the "Administrator password" box and click "Continue".
+
+4. Click "Install suggested plugins" and allow the installation to complete.
+
+5. On the "Create First Admin User" page:
+   - Username : admin
+   - Password : admin123 (or any password you prefer)
+   - Full Name: Dell Devops Admin
+   - E-mail   : admin@example.com
+
+6. Click "Save and Continue" -> leave Jenkins URL as http://localhost:8080/ 
+   -> click "Save and Finish" -> click "Start using Jenkins".
+
+--------------------------------------------------------------------------------
+STEP 3: CONFIGURE JENKINS GLOBAL ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+The pipeline requires connection settings to reach the target web server:
+
+1. In Jenkins, go to:
+   Manage Jenkins -> System (under System Configuration)
+
+2. Scroll down to the "Global properties" section.
+
+3. Check the box for "Environment variables".
+
+4. Click "Add" 4 times and enter these exact 4 key-value pairs:
+
+   Variable 1:
+   - Name : VM_IP
+   - Value: web-vm
+
+   Variable 2:
+   - Name : VM_USER
+   - Value: azureuser
+
+   Variable 3:
+   - Name : REMOTE_TMP_DIR
+   - Value: /tmp/cicd-build
+
+   Variable 4:
+   - Name : REMOTE_APP_DIR
+   - Value: /var/www/app
+
+5. Click "Save" at the bottom of the page.
+
+--------------------------------------------------------------------------------
+STEP 4: ADD CREDENTIALS IN JENKINS
+--------------------------------------------------------------------------------
+Go to:
+Manage Jenkins -> Credentials -> System -> Global credentials (unrestricted) 
+-> click "Add Credentials" (top right).
+
+Add the following credentials:
+
+--------------------------------------------------------------------------------
+Credential 1: SSH Private Key (for deploying to the VM)
+--------------------------------------------------------------------------------
+- In PowerShell, run this command to copy your private key to your clipboard:
+  Get-Content "$HOME\.ssh\azure_cicd_vm" -Raw | Set-Clipboard
+
+- In Jenkins Add Credentials:
+  - Kind       : Secret text
+  - Scope      : Global
+  - Secret     : Paste clipboard (must include -----BEGIN OPENSSH PRIVATE KEY-----
+                 and -----END OPENSSH PRIVATE KEY-----)
+  - ID         : azure-vm-ssh-private-key
+  - Description: SSH Private Key for deployment
+- Click "Create"
+
+--------------------------------------------------------------------------------
+Credential 2: SSH Known Hosts Entry (for strict SSH host verification)
+--------------------------------------------------------------------------------
+* NOTE: Because web-vm generates its host key during container build, always copy 
+  the exact host key directly from your running container using this command:
+
+- In PowerShell, run this command to copy the live host key directly to your clipboard:
+  (docker exec web-vm sh -c 'echo "web-vm $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d\" \" -f1,2)"') | Set-Clipboard
+
+- In Jenkins Add Credentials:
+  - Kind       : Secret text
+  - Scope      : Global
+  - Secret     : Paste clipboard (e.g. web-vm ssh-ed25519 AAAAC3NzaC1lZDI1NTE5...)
+  - ID         : azure-vm-known-hosts
+  - Description: SSH Known Hosts entry for web-vm
+- Click "Create"
+
+--------------------------------------------------------------------------------
+Credential 3 (Optional): GitHub Token (if using private repo or authenticated Git)
+--------------------------------------------------------------------------------
+* NOTE: Since https://github.com/n4zr-sketcher/Devops-Project.git is a PUBLIC repository, 
+  you do NOT need GitHub credentials! You can leave Credentials set to "- none -" 
+  in Step 5.
+  
+  If you do want to add GitHub credentials or if your repo is private:
+  - Kind       : Username with password
+  - Username   : n4zr-sketcher
+  - Password   : Your GitHub Personal Access Token (PAT) with 'repo' scope
+  - ID         : github-credentials
+  - Click "Create"
+
+--------------------------------------------------------------------------------
+STEP 5: CREATE AND CONFIGURE THE PIPELINE JOB
+--------------------------------------------------------------------------------
+1. In the Jenkins dashboard, click "New Item" (top left).
+2. Enter Item Name: devops-project-pipeline
+3. Select "Pipeline" and click "OK".
+4. Scroll down to the "Pipeline" section:
+   - Definition      : Pipeline script from SCM
+   - SCM             : Git
+   - Repository URL  : https://github.com/n4zr-sketcher/Devops-Project.git
+   - Credentials     : - none - (or 'github-credentials' if added)
+   - Branch Specifier: */main
+   - Script Path     : Jenkinsfile
+   - Uncheck "Lightweight checkout" (if shown)
+5. Click "Save".
+
+--------------------------------------------------------------------------------
+STEP 6: RUN THE PIPELINE & VERIFY LIVE DEPLOYMENT
+--------------------------------------------------------------------------------
+1. On the pipeline page, click "Build Now" in the left menu.
+2. Click build "#1" under Build History -> select "Console Output".
+3. Watch the 6 stages execute:
+   [1] Checkout   -> Clones latest commit from GitHub
+   [2] Validate   -> Checks index.html, style.css, script.js exist & valid
+   [3] Test       -> Validates HTML tags, CSS braces, runs 'node --check', no debug logs
+   [4] Prepare SSH-> Writes temporary SSH key and known_hosts entry
+   [5] Deploy     -> Transfers application files and deploy.sh via SSH/SCP
+   [6] Reload     -> Runs deploy.sh, checks 'nginx -t', atomic symlink swap, reloads Nginx
+   [7] Verify     -> Confirms HTTP 200, /health check, and build-info.txt match build #
+
+4. Once the console output shows "FINISHED: SUCCESS", open your browser:
+   http://localhost:8000
+
+You will see the fully deployed responsive web application with the 
+live Deployment Status Card showing:
+- Build Number: #1
+- Git Commit  : Latest commit hash
+- Status      : Verified live & running!
+
+--------------------------------------------------------------------------------
+STEP 7: MAKE DEPLOYMENTS AUTOMATIC ON GIT PUSH
+--------------------------------------------------------------------------------
+1. In Jenkins, open 'devops-project-pipeline' -> click "Configure".
+2. Scroll to "Build Triggers" and check "Poll SCM".
+3. Set schedule to:
+   * * * * *
+   (This tells Jenkins to check GitHub every 60 seconds for new changes).
+4. Click "Save".
+
+Test Automatic CI/CD:
+1. Open and edit app\index.html (e.g. change hero title or subtitle).
+2. In PowerShell, commit and push to GitHub:
+   git add app\index.html
+   git commit -m "Update homepage header"
+   git push origin main
+3. Within 60 seconds, Jenkins automatically triggers Build #2 and updates 
+   http://localhost:8000 with zero downtime!
+
+================================================================================
+PART B: CLOUD MODE (MICROSOFT AZURE + TERRAFORM) - OPTIONAL
+================================================================================
+When ready to deploy to a real Azure cloud Virtual Machine:
+
+1. Install Azure CLI in elevated PowerShell (if not already installed):
+   winget install Microsoft.AzureCLI --accept-package-agreements --accept-source-agreements
+
+2. Login to Azure:
+   az login
+
+3. Configure Terraform variables:
+   cd "C:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\terraform"
+   Copy-Item terraform.tfvars.example terraform.tfvars
+   powershell -ExecutionPolicy Bypass -File ..\scripts\update-ssh-cidr.ps1
+   $pub = Get-Content "$HOME\.ssh\azure_cicd_vm.pub" -Raw
+   (Get-Content terraform.tfvars) -replace 'ssh-ed25519 AAAA.*', $pub | Set-Content terraform.tfvars
+
+4. Deploy Infrastructure:
+   terraform init
+   terraform plan
+   terraform apply -auto-approve
+   (Terraform outputs the Azure VM Public IP e.g. 20.55.1.2)
+
+5. Update Jenkins VM_IP & Host Key:
+   - In Jenkins: Manage Jenkins -> System -> Global properties.
+   - Change VM_IP from 'web-vm' to your Azure VM Public IP.
+   - Update 'azure-vm-known-hosts' with:
+     ssh-keyscan -t ed25519 <AZURE_VM_PUBLIC_IP>
+
+6. Click "Build Now" in Jenkins to deploy to the Azure VM!
+   View live site at: http://<AZURE_VM_PUBLIC_IP>/
+
+7. Destroy Cloud Infrastructure (when finished, to stop Azure billing):
+   cd terraform
+   terraform destroy -auto-approve
+
+================================================================================
+USEFUL COMMANDS & TROUBLESHOOTING
+================================================================================
+
+1. DOCKER MANAGEMENT:
+   - Stop containers:
+     cd "C:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\jenkins"
+     docker compose stop
+
+   - Start containers:
+     cd "C:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\jenkins"
+     docker compose up -d
+
+   - Rebuild containers from scratch:
+     docker compose up -d --build
+
+   - Tear down containers and delete volumes:
+     docker compose down -v
+
+2. LOGS & SHELL ACCESS:
+   - View live Jenkins logs:
+     docker logs -f jenkins-cicd
+
+   - View live Web VM / Nginx logs:
+     docker logs -f web-vm
+
+   - Direct SSH into simulated VM:
+     ssh -i "$HOME\.ssh\azure_cicd_vm" -p 8000 azureuser@localhost
+
+   - Direct bash shell inside simulated VM:
+     docker exec -it web-vm bash
+
+3. COMMON TROUBLESHOOTING:
+   - Error: "failed to connect to the docker API at npipe"
+     Fix: Docker Desktop is not running. Launch Docker Desktop and wait until 
+          the status icon is green ("Engine running").
+
+   - Error: "Host key verification failed" in Jenkins stage 'Deploy'
+     Fix: Update credential 'azure-vm-known-hosts' using:
+          (docker exec web-vm sh -c 'echo "web-vm $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d\" \" -f1,2)"') | Set-Clipboard
+          and paste it into the secret text in Jenkins.
+
+   - Error: "VM_IP is not set" in Jenkins stage 'Test'
+     Fix: Go to Manage Jenkins -> System -> Global properties -> Environment variables.
+          Ensure VM_IP is defined with value 'web-vm'.
+
+   - Error: Port 8080 or 8000 already in use
+     Fix: Check what process is using the port:
+          netstat -ano | findstr :8080
+          netstat -ano | findstr :8000
+          Either stop that application, or edit jenkins\docker-compose.yml to 
+          map to a different host port (e.g. "8081:8080" or "8001:80").
+================================================================================
