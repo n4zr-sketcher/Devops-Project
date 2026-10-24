@@ -243,8 +243,8 @@ pipeline {
 
                     echo "Running deploy.sh on ${VM_IP} ..."
                     ssh ${SSH_OPTS} "${VM_USER}@${VM_IP}" \
-                        "DEPLOYED_BY=jenkins BUILD_NUMBER='${BUILD_NUMBER}' BUILD_TAG='${JOB_NAME}' GIT_COMMIT='${GIT_COMMIT}' \
-                         sudo bash '${REMOTE_STAGE}/deploy.sh' '${REMOTE_STAGE}/${APP_DIR}'"
+                        "sudo DEPLOYED_BY=jenkins BUILD_NUMBER='${BUILD_NUMBER}' BUILD_TAG='${JOB_NAME}' GIT_COMMIT='${GIT_COMMIT}' \
+                         bash '${REMOTE_STAGE}/deploy.sh' '${REMOTE_STAGE}/${APP_DIR}'"
                 '''
             }
         }
@@ -307,7 +307,7 @@ pipeline {
         }
         always {
             archiveArtifacts artifacts: 'app/**', allowEmptyArchive: true, fingerprint: true
-            cleanWs()
+            deleteDir()
         }
     }
 }
