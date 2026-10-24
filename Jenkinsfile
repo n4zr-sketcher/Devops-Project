@@ -1,33 +1,31 @@
-#!/usr/bin/env bash
-###############################################################################
-# Jenkinsfile
-#
-# Declarative pipeline for:
-#   "Automated Deployment of a Web Application using CI/CD, Terraform, Azure
-#    and Jenkins"
-#
-# Stages
-#   1. Checkout  - clone the latest commit from GitHub
-#   2. Validate  - the required application files must exist
-#   3. Test      - static checks on the HTML, CSS and JavaScript
-#   4. Deploy    - copy the application to the Azure VM over SSH
-#   5. Reload    - publish the release and gracefully reload Nginx
-#   6. Verify    - request the live URL and confirm the new build is served
-#
-# Secrets
-#   NOTHING sensitive is stored in this file. The SSH private key and the
-#   server host key are read from the Jenkins credential store:
-#
-#     azure-vm-ssh-private-key   Secret text   - contents of ~/.ssh/azure_cicd_vm
-#     azure-vm-known-hosts       Secret text   - one known_hosts line for the VM
-#
-#   Connection settings come from Jenkins global environment variables:
-#
-#     VM_IP             public IP of the Azure VM      e.g. 20.55.1.2
-#     VM_USER           SSH user                       e.g. azureuser
-#     REMOTE_TMP_DIR    staging folder on the VM       e.g. /tmp/cicd-build
-#     REMOTE_APP_DIR    live web root on the VM        e.g. /var/www/app
-###############################################################################
+// Jenkinsfile
+//
+// Declarative pipeline for:
+//   "Automated Deployment of a Web Application using CI/CD, Terraform, Azure
+//    and Jenkins"
+//
+// Stages
+//   1. Checkout  - clone the latest commit from GitHub
+//   2. Validate  - the required application files must exist
+//   3. Test      - static checks on the HTML, CSS and JavaScript
+//   4. Deploy    - copy the application to the Azure VM over SSH
+//   5. Reload    - publish the release and gracefully reload Nginx
+//   6. Verify    - request the live URL and confirm the new build is served
+//
+// Secrets
+//   NOTHING sensitive is stored in this file. The SSH private key and the
+//   server host key are read from the Jenkins credential store:
+//
+//     azure-vm-ssh-private-key   Secret text   - contents of ~/.ssh/azure_cicd_vm
+//     azure-vm-known-hosts       Secret text   - one known_hosts line for the VM
+//
+//   Connection settings come from Jenkins global environment variables:
+//
+//     VM_IP             public IP of the Azure VM      e.g. 20.55.1.2
+//     VM_USER           SSH user                       e.g. azureuser
+//     REMOTE_TMP_DIR    staging folder on the VM       e.g. /tmp/cicd-build
+//     REMOTE_APP_DIR    live web root on the VM        e.g. /var/www/app
+
 
 pipeline {
     agent any
