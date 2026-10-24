@@ -1,0 +1,63 @@
+###############################################################################
+# terraform.tfvars.example
+#
+# Copy this file to `terraform.tfvars` and edit the values:
+#
+#   cd terraform
+#   Copy-Item .\terraform.tfvars.example .\terraform.tfvars     # PowerShell
+#   cp terraform.tfvars.example terraform.tfvars                 # Linux/macOS
+#
+# `terraform.tfvars` is listed in .gitignore, so your real values (including
+# your IP address) are NEVER committed to Git.
+###############################################################################
+
+# --- Resource group ---------------------------------------------------------
+resource_group_name = "rg-devops-cicd"
+
+# --- Azure region -----------------------------------------------------------
+# Common low-cost choices: eastus, westus, centralus, southindia
+location = "eastus"
+
+# --- Virtual machine --------------------------------------------------------
+vm_name         = "vm-devops-cicd"
+vm_computer_name = "devops-cicd-vm"
+
+# Standard_B1ls  = cheapest (1 vCPU / 1 GB) - plenty for Nginx + static files
+# Standard_B2s   = 2 vCPU / 4 GB   - use this if you also run other services
+vm_size = "Standard_B1ls"
+
+# Local administrator account used for SSH
+admin_username = "azureuser"
+
+# SSH key pair that Jenkins uses to deploy.
+#
+#   1. Generate the pair (run on YOUR laptop):
+#        ssh-keygen -t ed25519 -f ~/.ssh/azure_cicd_vm -N ""
+#   2. Open ~/.ssh/azure_cicd_vm.pub and paste the WHOLE line here.
+#
+# The PRIVATE key (azure_cicd_vm) stays on your laptop and goes into the
+# Jenkins "Secret text" credential in Phase 4. Never commit it.
+ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIREPLACEME_WITH_YOUR_OWN_PUBLIC_KEY azure-cicd-deploy"
+
+# --- Network security --------------------------------------------------------
+# The ONLY address allowed to open SSH (TCP 22) on the VM.
+#
+# Find your current public IP with:
+#   PowerShell : Invoke-RestMethod https://api.ipify.org
+#   Linux/macOS: curl https://api.ipify.org
+#
+# Put the address in CIDR form: <your-ip>/32
+# Update it with:  powershell -ExecutionPolicy Bypass -File ../scripts/update-ssh-cidr.ps1
+allowed_ssh_cidr = "203.0.113.42/32"
+
+# --- Optional: override the default virtual network layout ------------------
+# vnet_address_space     = ["10.0.0.0/16"]
+# subnet_address_prefix  = "10.0.1.0/24"
+
+# --- Optional: tags used for cost tracking ----------------------------------
+tags = {
+  Project     = "devops-cicd-terraform-jenkins"
+  ManagedBy   = "terraform"
+  Environment = "college-demo"
+  Owner       = "student"
+}

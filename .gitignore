@@ -1,0 +1,77 @@
+# ---------------------------------------------------------------------------
+# Terraform
+# ---------------------------------------------------------------------------
+# State files contain sensitive data (resource IDs, public IPs, sometimes
+# credentials). They MUST NEVER be committed to Git.
+*.tfstate
+*.tfstate.*
+.terraform/
+# NOTE: .terraform.lock.hcl is intentionally NOT ignored. HashiCorp recommend
+# committing it so every machine installs exactly the same provider versions.
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!terraform.tfvars.example
+terraform.tfvars
+
+# Terraform plan / apply output files
+*.tfplan
+tfplan
+*.out
+
+# .terraformrc / CLI config may contain credentials
+.terraformrc
+terraform.rc
+
+# ---------------------------------------------------------------------------
+# Local variable files (secrets) - only the .example file is tracked
+# ---------------------------------------------------------------------------
+*.auto.tfvars
+secrets/
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------
+# SSH keys and certificates (never commit private keys)
+# ---------------------------------------------------------------------------
+*.pem
+*.key
+*.pub
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+known_hosts
+*.ppk
+*.jks
+*.keystore
+
+# ---------------------------------------------------------------------------
+# Jenkins
+# ---------------------------------------------------------------------------
+jenkins_home/
+jenkins.war
+jenkins.log
+JENKINS_HOME/
+
+# ---------------------------------------------------------------------------
+# Application / OS noise
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+node_modules/
+.vscode/
+.idea/
+*.swp
+
+# ---------------------------------------------------------------------------
+# Local scratch files
+# ---------------------------------------------------------------------------
+tmp/
+temp/
+/tmp/
+*.tmp

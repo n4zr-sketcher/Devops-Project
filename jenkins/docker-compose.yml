@@ -1,0 +1,49 @@
+###############################################################################
+# docker-compose.yml  -  Full CI/CD Environment (Jenkins Controller + Simulated VM)
+#
+#   cd jenkins
+#   docker compose up -d --build
+#   docker compose logs -f
+#
+#   Jenkins UI  : http://localhost:8080
+#   Web App UI  : http://localhost:8000
+#
+# Both services communicate securely on the internal `cicd-net` Docker network.
+###############################################################################
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: devops-cicd-jenkins:latest
+    container_name: jenkins-cicd
+    restart: unless-stopped
+    ports:
+      - "8080:8080"    # Jenkins web interface
+      - "50000:50000"  # Inbound build agents
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    environment:
+      - JAVA_OPTS=-Xmx1024m
+      - TZ=UTC
+    networks:
+      - cicd-net
+
+  web-vm:
+    build:
+      context: ./web-vm
+      dockerfile: Dockerfile
+    image: devops-cicd-web-vm:latest
+    container_name: web-vm
+    restart: unless-stopped
+    ports:
+      - "8000:80"      # Live website accessible at http://localhost:8000
+    networks:
+      - cicd-net
+
+volumes:
+  jenkins_home:
+
+networks:
+  cicd-net:
+    name: cicd-net

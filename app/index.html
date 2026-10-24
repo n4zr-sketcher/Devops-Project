@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Automated Deployment of a Web Application using CI/CD, Terraform, Azure and Jenkins - a college DevOps project demonstrating infrastructure as code and automated continuous delivery." />
+  <title>Automated Deployment of a Web Application | CI/CD + Terraform + Azure + Jenkins</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230ea5e9'/><path d='M28 52l14 14 30-30' stroke='%230f172a' stroke-width='11' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+</head>
+<body>
+
+  <!-- ==================== NAVIGATION ==================== -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="#top">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </span>
+        <span class="brand__text">DevOps&nbsp;CI/CD</span>
+      </a>
+
+      <ul class="nav__links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#technology">Technology</a></li>
+        <li><a href="#status">Deployment</a></li>
+      </ul>
+
+      <a class="nav__cta" href="#status">
+        <span class="dot" id="nav-dot"></span>
+        <span id="nav-status">Checking</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO ==================== -->
+  <header class="hero" id="top">
+    <div class="hero__bg" aria-hidden="true"></div>
+
+    <div class="hero__content">
+      <p class="eyebrow">Final Year College Project &middot; DevOps Engineering</p>
+
+      <h1 class="hero__title">
+        Automated Deployment of a<br />
+        <span class="gradient-text">Web Application</span>
+      </h1>
+
+      <p class="hero__lead">
+        Infrastructure is defined as code with <strong>Terraform</strong> and provisioned on
+        <strong>Microsoft Azure</strong>. Every push to <strong>GitHub</strong> is detected by
+        <strong>Jenkins</strong>, which validates, tests and deploys the application over a secure
+        SSH channel straight to an <strong>Ubuntu</strong> server running <strong>Nginx</strong>.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#pipeline">Explore the pipeline</a>
+        <a class="btn btn--ghost" href="#status">View live deployment</a>
+      </div>
+
+      <dl class="hero__stats">
+        <div class="stat">
+          <dt>Cloud</dt>
+          <dd>Microsoft Azure</dd>
+        </div>
+        <div class="stat">
+          <dt>IaC</dt>
+          <dd>Terraform</dd>
+        </div>
+        <div class="stat">
+          <dt>CI/CD</dt>
+          <dd>Jenkins Pipeline</dd>
+        </div>
+        <div class="stat">
+          <dt>Runtime</dt>
+          <dd>Ubuntu + Nginx</dd>
+        </div>
+      </dl>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==================== ABOUT ==================== -->
+    <section class="section" id="about">
+      <div class="section__head">
+        <p class="eyebrow">01 &mdash; Introduction</p>
+        <h2>From code to cloud, without manual steps</h2>
+        <p class="section__lead">
+          This project replaces the traditional "edit files, copy them to a server, restart the web
+          server" routine with a fully automated delivery pipeline. The goal is not just to host a
+          website, but to demonstrate how modern DevOps practice &mdash; infrastructure as code,
+          continuous integration and continuous delivery &mdash; works end to end.
+        </p>
+      </div>
+
+      <div class="grid grid--3">
+        <article class="card">
+          <span class="card__badge">Problem</span>
+          <h3>Manual deployment is slow and error-prone</h3>
+          <p>
+            Copying files by hand means the live server and the source repository can drift apart.
+            A forgotten restart leaves the site serving stale content, and nobody knows exactly
+            which version is running.
+          </p>
+        </article>
+
+        <article class="card">
+          <span class="card__badge">Solution</span>
+          <h3>A reproducible, automated pipeline</h3>
+          <p>
+            Terraform describes the entire Azure environment as code, so it can be recreated at any
+            time. Jenkins reacts to a GitHub push, proves the code is sound, and publishes it to the
+            server in a single audited, repeatable action.
+          </p>
+        </article>
+
+        <article class="card">
+          <span class="card__badge">Outcome</span>
+          <h3>Every push is deployed and verified</h3>
+          <p>
+            Each successful run publishes an immutable release folder, atomically switches the live
+            symlink and gracefully reloads Nginx. The pipeline then verifies the response over HTTP,
+            so a green build genuinely means the website is serving the new content.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ==================== PIPELINE ==================== -->
+    <section class="section section--alt" id="pipeline">
+      <div class="section__head">
+        <p class="eyebrow">02 &mdash; Continuous Integration &amp; Delivery</p>
+        <h2>The Jenkins pipeline</h2>
+        <p class="section__lead">
+          The <code>Jenkinsfile</code> in the repository describes the delivery process as code. It
+          runs six stages; if any stage fails, the pipeline stops immediately and the live website
+          is left untouched.
+        </p>
+      </div>
+
+      <ol class="flow">
+        <li class="flow__node">
+          <span class="flow__num">01</span>
+          <h3>Checkout</h3>
+          <p>Clone the latest commit from GitHub using a stored credential.</p>
+        </li>
+        <li class="flow__node">
+          <span class="flow__num">02</span>
+          <h3>Validate</h3>
+          <p>Assert that <code>index.html</code>, <code>style.css</code> and <code>script.js</code> all exist.</p>
+        </li>
+        <li class="flow__node">
+          <span class="flow__num">03</span>
+          <h3>Test</h3>
+          <p>Run static checks on the HTML, CSS and JavaScript before anything ships.</p>
+        </li>
+        <li class="flow__node">
+          <span class="flow__num">04</span>
+          <h3>Deploy</h3>
+          <p>Transfer the files to the Ubuntu VM over an authenticated SSH channel.</p>
+        </li>
+        <li class="flow__node">
+          <span class="flow__num">05</span>
+          <h3>Reload</h3>
+          <p>Atomically swap the release and gracefully reload Nginx &mdash; no downtime.</p>
+        </li>
+        <li class="flow__node">
+          <span class="flow__num">06</span>
+          <h3>Verify</h3>
+          <p>Request the live URL and confirm it serves the freshly deployed content.</p>
+        </li>
+      </ol>
+
+      <div class="note">
+        <h4>Why a graceful reload?</h4>
+        <p>
+          <code>systemctl reload nginx</code> tells Nginx to pick up the new configuration and to
+          finish the requests that are already in flight. A <code>restart</code> would terminate
+          every open connection, which is exactly the kind of avoidable interruption this project
+          is designed to eliminate.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== TECHNOLOGY ==================== -->
+    <section class="section" id="technology">
+      <div class="section__head">
+        <p class="eyebrow">03 &mdash; Tools &amp; Technologies</p>
+        <h2>Technology stack</h2>
+        <p class="section__lead">
+          Each tool solves one specific problem in the chain, and together they cover the full
+          lifecycle from source code to a running production-style server.
+        </p>
+      </div>
+
+      <div class="grid grid--2">
+        <article class="tech">
+          <span class="tech__icon tech__icon--violet" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7h18M3 12h18M3 17h10" />
+              <circle cx="18" cy="17" r="2.4" />
+            </svg>
+          </span>
+          <h3>Terraform</h3>
+          <span class="tech__role">Infrastructure as Code</span>
+          <p>
+            Describes the Resource Group, Virtual Network, Subnet, Network Security Group, Public IP,
+            Network Interface and Ubuntu VM declaratively. The same configuration produces the same
+            environment every time, and a single <code>terraform destroy</code> removes it all.
+          </p>
+          <ul class="tags">
+            <li>provider.tf</li>
+            <li>main.tf</li>
+            <li>outputs.tf</li>
+            <li>state files</li>
+          </ul>
+        </article>
+
+        <article class="tech">
+          <span class="tech__icon tech__icon--azure" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7.5 18.5a4.5 4.5 0 0 1-.6-8.96 6 6 0 0 1 11.44-1.4A4.25 4.25 0 0 1 17.5 18.5Z" />
+            </svg>
+          </span>
+          <h3>Microsoft Azure</h3>
+          <span class="tech__role">Cloud Platform</span>
+          <p>
+            Hosts the application. Traffic is controlled by a Network Security Group that permits
+            HTTP to the world but restricts SSH to a single known IP address. Cloud-init installs
+            and configures Nginx during the very first boot.
+          </p>
+          <ul class="tags">
+            <li>Resource Group</li>
+            <li>VNet / Subnet</li>
+            <li>NSG rules</li>
+            <li>Ubuntu 22.04</li>
+          </ul>
+        </article>
+
+        <article class="tech">
+          <span class="tech__icon tech__icon--amber" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3.2" />
+              <path d="M12 2v3.2M12 18.8V22M22 12h-3.2M5.2 12H2M18.4 5.6l-2.3 2.3M7.9 16.1l-2.3 2.3M18.4 18.4l-2.3-2.3M7.9 7.9 5.6 5.6" />
+            </svg>
+          </span>
+          <h3>Jenkins</h3>
+          <span class="tech__role">CI/CD Orchestrator</span>
+          <p>
+            Executes the declarative pipeline. Secrets such as the SSH private key and the server
+            host key are kept in the Jenkins credential store, never in the repository, and are
+            masked in the console output.
+          </p>
+          <ul class="tags">
+            <li>Declarative pipeline</li>
+            <li>Credentials store</li>
+            <li>Poll SCM / Webhook</li>
+            <li>Blue Ocean</li>
+          </ul>
+        </article>
+
+        <article class="tech">
+          <span class="tech__icon tech__icon--green" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.7 4.7 0 0 0-1.3-3.2 4.3 4.3 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.3 4.3 0 0 0-.1 3.2A4.7 4.7 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" />
+            </svg>
+          </span>
+          <h3>GitHub</h3>
+          <span class="tech__role">Version Control &amp; Trigger</span>
+          <p>
+            Holds the source of truth and the pipeline definition. A webhook (or, for a laptop that
+            is not reachable from the internet, a scheduled Poll SCM scan) notifies Jenkins the
+            moment new code is pushed.
+          </p>
+          <ul class="tags">
+            <li>Git</li>
+            <li>Webhooks</li>
+            <li>Push triggers</li>
+            <li>Branch protection</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ==================== DEPLOYMENT STATUS ==================== -->
+    <section class="section section--alt" id="status">
+      <div class="section__head">
+        <p class="eyebrow">04 &mdash; Live Deployment</p>
+        <h2>Deployment status</h2>
+        <p class="section__lead">
+          The values below are read live from the deployed server. The deployment script writes a
+          <code>build-info.txt</code> file into every release, and Nginx publishes it at
+          <code>/build-info.txt</code> together with a health endpoint at <code>/health</code>.
+        </p>
+      </div>
+
+      <div class="status">
+        <div class="status__panel">
+          <div class="status__row">
+            <span class="status__label">Server status</span>
+            <span class="pill pill--pending" id="status-pill">Checking&hellip;</span>
+          </div>
+          <div class="status__row">
+            <span class="status__label">Application URL</span>
+            <a class="status__value status__value--link" id="status-url" href="#">&mdash;</a>
+          </div>
+          <div class="status__row">
+            <span class="status__label">Build number</span>
+            <span class="status__value" id="status-build">&mdash;</span>
+          </div>
+          <div class="status__row">
+            <span class="status__label">Git commit</span>
+            <span class="status__value status__value--mono" id="status-commit">&mdash;</span>
+          </div>
+          <div class="status__row">
+            <span class="status__label">Deployed at (UTC)</span>
+            <span class="status__value status__value--mono" id="status-time">&mdash;</span>
+          </div>
+          <div class="status__row">
+            <span class="status__label">Release identifier</span>
+            <span class="status__value status__value--mono" id="status-release">&mdash;</span>
+          </div>
+          <div class="status__row">
+            <span class="status__label">Deployed by</span>
+            <span class="status__value" id="status-by">&mdash;</span>
+          </div>
+
+          <div class="status__actions">
+            <button class="btn btn--primary btn--sm" id="refresh-btn" type="button">Refresh status</button>
+            <span class="status__stamp" id="status-stamp"></span>
+          </div>
+        </div>
+
+        <aside class="status__aside">
+          <h3>How this page knows</h3>
+          <ol class="mini-steps">
+            <li>Jenkins uploads the new release and writes <code>build-info.txt</code>.</li>
+            <li>Nginx reloads and serves it from the active release folder.</li>
+            <li>This page requests <code>/build-info.txt</code> and <code>/health</code> over HTTP.</li>
+            <li>The values above update automatically every 30 seconds.</li>
+          </ol>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <p class="footer__title">Automated Deployment of a Web Application using CI/CD, Terraform, Azure and Jenkins</p>
+        <p class="footer__meta">
+          Provisioned with Terraform &middot; Delivered by Jenkins &middot; Hosted on Microsoft Azure
+        </p>
+      </div>
+      <p class="footer__meta">
+        Every push to GitHub &rarr; Jenkins &rarr; Ubuntu VM &rarr; Nginx &rarr; live website
+      </p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

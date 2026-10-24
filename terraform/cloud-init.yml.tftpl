@@ -1,0 +1,124 @@
+#cloud-config
+###############################################################################
+# cloud-init.yml.tftpl
+#
+# This file is a Terraform TEMPLATE (.tftpl). Terraform replaces every
+# $${variable} with the real value from variables.tf before sending the result
+# to Azure as the VM's `custom_data`.
+#
+# (To show a literal dollar-brace placeholder instead of interpolating it,
+#  double the dollar sign - that is the Terraform escape sequence.)
+#
+# Azure runs this script ONCE, as the admin user, the first time the VM boots.
+# It installs Nginx, points it at the application directory and publishes a
+# placeholder page, so the website is already alive before Jenkins deploys
+# anything.
+###############################################################################
+
+package_update: true
+package_upgrade: false
+
+packages:
+  - nginx
+  - curl
+  - rsync
+  - unzip
+
+write_files:
+  # ---------------------------------------------------------------------------
+  # Nginx virtual host for the project
+  # ---------------------------------------------------------------------------
+  - path: /etc/nginx/sites-available/${nginx_site}
+    owner: root
+    group: root
+    permissions: '0644'
+    content: |
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+          server_name _;
+
+          root ${app_dir};
+          index index.html;
+
+          # Static files. `=404` means a missing file returns a real 404.
+          location / {
+              try_files $uri $uri/ =404;
+          }
+
+          # Health check endpoint used by the Jenkins "Verify" stage.
+          location = /health {
+              access_log off;
+              add_header Content-Type text/plain always;
+              return 200 'ok';
+          }
+
+          # Build metadata published by scripts/deploy.sh - never cached so the
+          # verification stage always sees the newest deployment.
+          location = /build-info.txt {
+              add_header Cache-Control "no-store" always;
+          }
+      }
+
+  # ---------------------------------------------------------------------------
+  # Placeholder page - visible until the first Jenkins deployment
+  # ---------------------------------------------------------------------------
+  - path: ${app_dir}/index.html
+    owner: root
+    group: root
+    permissions: '0644'
+    content: |
+      <!doctype html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>${placeholder_title}</title>
+          <style>
+              body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+                     background: #0f172a; color: #e2e8f0; display: flex;
+                     align-items: center; justify-content: center;
+                     min-height: 100vh; margin: 0; text-align: center; }
+              .card  { background: #1e293b; border: 1px solid #334155;
+                       border-radius: 16px; padding: 48px 56px; max-width: 640px; }
+              h1    { margin: 0 0 12px; font-size: 28px; }
+              p     { margin: 8px 0; line-height: 1.6; color: #94a3b8; }
+              code  { background: #0f172a; padding: 3px 8px; border-radius: 6px;
+                      color: #38bdf8; }
+              .ok   { color: #4ade80; font-weight: 600; }
+          </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>${placeholder_title}</h1>
+          <p><span class="ok">Nginx is running.</span></p>
+          <p>This page was generated automatically by cloud-init during
+             <code>terraform apply</code>.</p>
+          <p>It will be replaced by the real web application as soon as the
+             Jenkins pipeline performs its first successful deployment.</p>
+          <p>Health check: <code>/health</code></p>
+        </div>
+      </body>
+      </html>
+
+runcmd:
+  # --- application directories -------------------------------------------
+  - [ mkdir, -p, "${app_dir}" ]
+  - [ mkdir, -p, "${releases_dir}" ]
+  - [ chown, "-R", "root:root", "${app_dir}" ]
+  - [ chmod, "-R", "755", "${app_dir}" ]
+
+  # --- activate our Nginx site and remove the Ubuntu default site ---------
+  - rm -f /etc/nginx/sites-enabled/default
+  - [ ln, "-sfn", "/etc/nginx/sites-available/${nginx_site}", "/etc/nginx/sites-enabled/${nginx_site}" ]
+
+  # --- validate the configuration BEFORE restarting ------------------------
+  # If `nginx -t` fails the whole cloud-init script stops and the old
+  # configuration keeps working, so the VM never ends up with a broken site.
+  - nginx -t
+  - [ systemctl, "enable", "nginx" ]
+  - [ systemctl, "restart", "nginx" ]
+
+  # --- proof of life for the report ---------------------------------------
+  - [ sh, "-c", "echo \"[cloud-init] nginx bootstrap finished at $(date -u)\" | tee -a /var/log/cicd-bootstrap.log" ]
+  - [ sh, "-c", "curl -fsS http://127.0.0.1/health || echo '[cloud-init] health check failed'" ]
