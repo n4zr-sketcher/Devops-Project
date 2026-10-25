@@ -3,361 +3,670 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Automated Deployment of a Web Application using CI/CD, Terraform, Azure and Jenkins - a college DevOps project demonstrating infrastructure as code and automated continuous delivery." />
-  <title>Automated Deployment of a Web Application | CI/CD + Terraform + Azure + Jenkins</title>
+  <meta name="description" content="Production-grade automated deployment pipeline for web applications using Terraform, Azure, Jenkins, and Nginx. Zero-downtime continuous delivery." />
+  <title>DevOps Pipeline &middot; Automated Web Application Delivery</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230ea5e9'/><path d='M28 52l14 14 30-30' stroke='%230f172a' stroke-width='11' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23282B4A'/><path d='M8 16l5 5 11-11' stroke='%23EEEBDA' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 </head>
 <body>
 
-  <!-- ==================== NAVIGATION ==================== -->
-  <nav class="nav">
-    <div class="nav__inner">
-      <a class="brand" href="#top">
-        <span class="brand__mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6 9 17l-5-5" />
+  <!-- ==================== HEADER & NAVIGATION ==================== -->
+  <header class="header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="DevOps CI/CD Platform Home">
+        <span class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
           </svg>
         </span>
-        <span class="brand__text">DevOps&nbsp;CI/CD</span>
+        <span class="brand-name">DevOps <span>Platform</span></span>
       </a>
 
-      <ul class="nav__links">
-        <li><a href="#about">About</a></li>
-        <li><a href="#pipeline">Pipeline</a></li>
-        <li><a href="#technology">Technology</a></li>
-        <li><a href="#status">Deployment</a></li>
-      </ul>
+      <nav class="nav-menu">
+        <a class="nav-item" href="#overview">Overview</a>
+        <a class="nav-item" href="#pipeline">Pipeline</a>
+        <a class="nav-item" href="#stack">Stack</a>
+        <a class="nav-item" href="#deployment">Telemetry</a>
+      </nav>
 
-      <a class="nav__cta" href="#status">
-        <span class="dot" id="nav-dot"></span>
-        <span id="nav-status">Checking</span>
-      </a>
-    </div>
-  </nav>
-
-  <!-- ==================== HERO ==================== -->
-  <header class="hero" id="top">
-    <div class="hero__bg" aria-hidden="true"></div>
-
-    <div class="hero__content">
-      <p class="eyebrow">Final Year College Project &middot; DevOps Engineering</p>
-
-      <h1 class="hero__title">
-        Automated Deployment of a<br />
-        <span class="gradient-text">Web Application</span>
-      </h1>
-
-      <p class="hero__lead">
-        Infrastructure is defined as code with <strong>Terraform</strong> and provisioned on
-        <strong>Microsoft Azure</strong>. Every push to <strong>GitHub</strong> is detected by
-        <strong>Jenkins</strong>, which validates, tests and deploys the application over a secure
-        SSH channel straight to an <strong>Ubuntu</strong> server running <strong>Nginx</strong>.
-      </p>
-
-      <div class="hero__actions">
-        <a class="btn btn--primary" href="#pipeline">Explore the pipeline</a>
-        <a class="btn btn--ghost" href="#status">View live deployment</a>
+      <div class="header-actions">
+        <a class="status-badge" href="#deployment" title="Target server health status">
+          <span class="status-indicator">
+            <span class="status-dot" id="nav-dot"></span>
+            <span class="status-pulse"></span>
+          </span>
+          <span class="status-text" id="nav-status">Checking</span>
+        </a>
       </div>
-
-      <dl class="hero__stats">
-        <div class="stat">
-          <dt>Cloud</dt>
-          <dd>Microsoft Azure</dd>
-        </div>
-        <div class="stat">
-          <dt>IaC</dt>
-          <dd>Terraform</dd>
-        </div>
-        <div class="stat">
-          <dt>CI/CD</dt>
-          <dd>Jenkins Pipeline</dd>
-        </div>
-        <div class="stat">
-          <dt>Runtime</dt>
-          <dd>Ubuntu + Nginx</dd>
-        </div>
-      </dl>
     </div>
   </header>
 
   <main>
-    <!-- ==================== ABOUT ==================== -->
-    <section class="section" id="about">
-      <div class="section__head">
-        <p class="eyebrow">01 &mdash; Introduction</p>
-        <h2>From code to cloud, without manual steps</h2>
-        <p class="section__lead">
-          This project replaces the traditional "edit files, copy them to a server, restart the web
-          server" routine with a fully automated delivery pipeline. The goal is not just to host a
-          website, but to demonstrate how modern DevOps practice &mdash; infrastructure as code,
-          continuous integration and continuous delivery &mdash; works end to end.
-        </p>
-      </div>
-
-      <div class="grid grid--3">
-        <article class="card">
-          <span class="card__badge">Problem</span>
-          <h3>Manual deployment is slow and error-prone</h3>
-          <p>
-            Copying files by hand means the live server and the source repository can drift apart.
-            A forgotten restart leaves the site serving stale content, and nobody knows exactly
-            which version is running.
-          </p>
-        </article>
-
-        <article class="card">
-          <span class="card__badge">Solution</span>
-          <h3>A reproducible, automated pipeline</h3>
-          <p>
-            Terraform describes the entire Azure environment as code, so it can be recreated at any
-            time. Jenkins reacts to a GitHub push, proves the code is sound, and publishes it to the
-            server in a single audited, repeatable action.
-          </p>
-        </article>
-
-        <article class="card">
-          <span class="card__badge">Outcome</span>
-          <h3>Every push is deployed and verified</h3>
-          <p>
-            Each successful run publishes an immutable release folder, atomically switches the live
-            symlink and gracefully reloads Nginx. The pipeline then verifies the response over HTTP,
-            so a green build genuinely means the website is serving the new content.
-          </p>
-        </article>
-      </div>
-    </section>
-
-    <!-- ==================== PIPELINE ==================== -->
-    <section class="section section--alt" id="pipeline">
-      <div class="section__head">
-        <p class="eyebrow">02 &mdash; Continuous Integration &amp; Delivery</p>
-        <h2>The Jenkins pipeline</h2>
-        <p class="section__lead">
-          The <code>Jenkinsfile</code> in the repository describes the delivery process as code. It
-          runs six stages; if any stage fails, the pipeline stops immediately and the live website
-          is left untouched.
-        </p>
-      </div>
-
-      <ol class="flow">
-        <li class="flow__node">
-          <span class="flow__num">01</span>
-          <h3>Checkout</h3>
-          <p>Clone the latest commit from GitHub using a stored credential.</p>
-        </li>
-        <li class="flow__node">
-          <span class="flow__num">02</span>
-          <h3>Validate</h3>
-          <p>Assert that <code>index.html</code>, <code>style.css</code> and <code>script.js</code> all exist.</p>
-        </li>
-        <li class="flow__node">
-          <span class="flow__num">03</span>
-          <h3>Test</h3>
-          <p>Run static checks on the HTML, CSS and JavaScript before anything ships.</p>
-        </li>
-        <li class="flow__node">
-          <span class="flow__num">04</span>
-          <h3>Deploy</h3>
-          <p>Transfer the files to the Ubuntu VM over an authenticated SSH channel.</p>
-        </li>
-        <li class="flow__node">
-          <span class="flow__num">05</span>
-          <h3>Reload</h3>
-          <p>Atomically swap the release and gracefully reload Nginx &mdash; no downtime.</p>
-        </li>
-        <li class="flow__node">
-          <span class="flow__num">06</span>
-          <h3>Verify</h3>
-          <p>Request the live URL and confirm it serves the freshly deployed content.</p>
-        </li>
-      </ol>
-
-      <div class="note">
-        <h4>Why a graceful reload?</h4>
-        <p>
-          <code>systemctl reload nginx</code> tells Nginx to pick up the new configuration and to
-          finish the requests that are already in flight. A <code>restart</code> would terminate
-          every open connection, which is exactly the kind of avoidable interruption this project
-          is designed to eliminate.
-        </p>
-      </div>
-    </section>
-
-    <!-- ==================== TECHNOLOGY ==================== -->
-    <section class="section" id="technology">
-      <div class="section__head">
-        <p class="eyebrow">03 &mdash; Tools &amp; Technologies</p>
-        <h2>Technology stack</h2>
-        <p class="section__lead">
-          Each tool solves one specific problem in the chain, and together they cover the full
-          lifecycle from source code to a running production-style server.
-        </p>
-      </div>
-
-      <div class="grid grid--2">
-        <article class="tech">
-          <span class="tech__icon tech__icon--violet" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7h18M3 12h18M3 17h10" />
-              <circle cx="18" cy="17" r="2.4" />
-            </svg>
-          </span>
-          <h3>Terraform</h3>
-          <span class="tech__role">Infrastructure as Code</span>
-          <p>
-            Describes the Resource Group, Virtual Network, Subnet, Network Security Group, Public IP,
-            Network Interface and Ubuntu VM declaratively. The same configuration produces the same
-            environment every time, and a single <code>terraform destroy</code> removes it all.
-          </p>
-          <ul class="tags">
-            <li>provider.tf</li>
-            <li>main.tf</li>
-            <li>outputs.tf</li>
-            <li>state files</li>
-          </ul>
-        </article>
-
-        <article class="tech">
-          <span class="tech__icon tech__icon--azure" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7.5 18.5a4.5 4.5 0 0 1-.6-8.96 6 6 0 0 1 11.44-1.4A4.25 4.25 0 0 1 17.5 18.5Z" />
-            </svg>
-          </span>
-          <h3>Microsoft Azure</h3>
-          <span class="tech__role">Cloud Platform</span>
-          <p>
-            Hosts the application. Traffic is controlled by a Network Security Group that permits
-            HTTP to the world but restricts SSH to a single known IP address. Cloud-init installs
-            and configures Nginx during the very first boot.
-          </p>
-          <ul class="tags">
-            <li>Resource Group</li>
-            <li>VNet / Subnet</li>
-            <li>NSG rules</li>
-            <li>Ubuntu 22.04</li>
-          </ul>
-        </article>
-
-        <article class="tech">
-          <span class="tech__icon tech__icon--amber" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3.2" />
-              <path d="M12 2v3.2M12 18.8V22M22 12h-3.2M5.2 12H2M18.4 5.6l-2.3 2.3M7.9 16.1l-2.3 2.3M18.4 18.4l-2.3-2.3M7.9 7.9 5.6 5.6" />
-            </svg>
-          </span>
-          <h3>Jenkins</h3>
-          <span class="tech__role">CI/CD Orchestrator</span>
-          <p>
-            Executes the declarative pipeline. Secrets such as the SSH private key and the server
-            host key are kept in the Jenkins credential store, never in the repository, and are
-            masked in the console output.
-          </p>
-          <ul class="tags">
-            <li>Declarative pipeline</li>
-            <li>Credentials store</li>
-            <li>Poll SCM / Webhook</li>
-            <li>Blue Ocean</li>
-          </ul>
-        </article>
-
-        <article class="tech">
-          <span class="tech__icon tech__icon--green" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.7 4.7 0 0 0-1.3-3.2 4.3 4.3 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.3 4.3 0 0 0-.1 3.2A4.7 4.7 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" />
-            </svg>
-          </span>
-          <h3>GitHub</h3>
-          <span class="tech__role">Version Control &amp; Trigger</span>
-          <p>
-            Holds the source of truth and the pipeline definition. A webhook (or, for a laptop that
-            is not reachable from the internet, a scheduled Poll SCM scan) notifies Jenkins the
-            moment new code is pushed.
-          </p>
-          <ul class="tags">
-            <li>Git</li>
-            <li>Webhooks</li>
-            <li>Push triggers</li>
-            <li>Branch protection</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <!-- ==================== DEPLOYMENT STATUS ==================== -->
-    <section class="section section--alt" id="status">
-      <div class="section__head">
-        <p class="eyebrow">04 &mdash; Live Deployment</p>
-        <h2>Deployment status</h2>
-        <p class="section__lead">
-          The values below are read live from the deployed server. The deployment script writes a
-          <code>build-info.txt</code> file into every release, and Nginx publishes it at
-          <code>/build-info.txt</code> together with a health endpoint at <code>/health</code>.
-        </p>
-      </div>
-
-      <div class="status">
-        <div class="status__panel">
-          <div class="status__row">
-            <span class="status__label">Server status</span>
-            <span class="pill pill--pending" id="status-pill">Checking&hellip;</span>
-          </div>
-          <div class="status__row">
-            <span class="status__label">Application URL</span>
-            <a class="status__value status__value--link" id="status-url" href="#">&mdash;</a>
-          </div>
-          <div class="status__row">
-            <span class="status__label">Build number</span>
-            <span class="status__value" id="status-build">&mdash;</span>
-          </div>
-          <div class="status__row">
-            <span class="status__label">Git commit</span>
-            <span class="status__value status__value--mono" id="status-commit">&mdash;</span>
-          </div>
-          <div class="status__row">
-            <span class="status__label">Deployed at (UTC)</span>
-            <span class="status__value status__value--mono" id="status-time">&mdash;</span>
-          </div>
-          <div class="status__row">
-            <span class="status__label">Release identifier</span>
-            <span class="status__value status__value--mono" id="status-release">&mdash;</span>
-          </div>
-          <div class="status__row">
-            <span class="status__label">Deployed by</span>
-            <span class="status__value" id="status-by">&mdash;</span>
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="hero" id="top">
+      <div class="container hero-container">
+        
+        <div class="hero-header">
+          <div class="hero-eyebrow">
+            <span class="badge-tag">INFRASTRUCTURE AS CODE</span>
+            <span class="eyebrow-sep">&middot;</span>
+            <span class="eyebrow-text">Automated Continuous Delivery</span>
           </div>
 
-          <div class="status__actions">
-            <button class="btn btn--primary btn--sm" id="refresh-btn" type="button">Refresh status</button>
-            <span class="status__stamp" id="status-stamp"></span>
+          <h1 class="hero-title">
+            Automated Deployment<br />
+            <span class="hero-gradient">of a Web Application</span>
+          </h1>
+
+          <p class="hero-summary">
+            Enterprise delivery pipeline engineered with <strong>Terraform</strong> and <strong>Microsoft Azure</strong>.
+            Every commit triggers <strong>Jenkins</strong> to run static validation, provision atomic releases via SSH,
+            and execute zero-downtime reloads on <strong>Ubuntu &amp; Nginx</strong>.
+          </p>
+
+          <div class="hero-buttons">
+            <a class="btn btn-primary" href="#pipeline">
+              <span>Inspect Pipeline Stages</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a class="btn btn-secondary" href="#deployment">
+              <span>Live Server Telemetry</span>
+            </a>
           </div>
         </div>
 
-        <aside class="status__aside">
-          <h3>How this page knows</h3>
-          <ol class="mini-steps">
-            <li>Jenkins uploads the new release and writes <code>build-info.txt</code>.</li>
-            <li>Nginx reloads and serves it from the active release folder.</li>
-            <li>This page requests <code>/build-info.txt</code> and <code>/health</code> over HTTP.</li>
-            <li>The values above update automatically every 30 seconds.</li>
-          </ol>
-        </aside>
+        <!-- ==================== DEVOPS CONTROL CENTER (HERO SHOWCASE) ==================== -->
+        <div class="console-card">
+          <div class="console-topbar">
+            <div class="console-controls">
+              <span class="ctrl-dot ctrl-red"></span>
+              <span class="ctrl-dot ctrl-yellow"></span>
+              <span class="ctrl-dot ctrl-green"></span>
+            </div>
+            <div class="console-tab">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              <span>azure-production-vm &mdash; nginx/1.18.0 &mdash; live monitor</span>
+            </div>
+            <div class="console-meta">
+              <span class="pill-chip pill-chip-ok">HTTP 200</span>
+              <span class="latency-chip">0.4ms probe</span>
+            </div>
+          </div>
+
+          <div class="console-grid">
+            <!-- Left: Pipeline Flow -->
+            <div class="console-pipeline">
+              <div class="pipeline-header">
+                <span class="pipeline-heading">ORCHESTRATED DELIVERY PIPELINE</span>
+                <span class="pipeline-tag">JENKINSFILE</span>
+              </div>
+              <div class="pipeline-flow">
+                <div class="pipe-node active-pipe">
+                  <div class="pipe-icon-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="pipe-info">
+                    <span class="pipe-title">01 &middot; Checkout</span>
+                    <span class="pipe-detail">git fetch @ main</span>
+                  </div>
+                  <span class="pipe-duration">0.3s</span>
+                </div>
+
+                <div class="pipe-node active-pipe">
+                  <div class="pipe-icon-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="pipe-info">
+                    <span class="pipe-title">02 &middot; Validate</span>
+                    <span class="pipe-detail">file existence &amp; doctype</span>
+                  </div>
+                  <span class="pipe-duration">0.2s</span>
+                </div>
+
+                <div class="pipe-node active-pipe">
+                  <div class="pipe-icon-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="pipe-info">
+                    <span class="pipe-title">03 &middot; Test</span>
+                    <span class="pipe-detail">node AST &amp; CSS braces</span>
+                  </div>
+                  <span class="pipe-duration">0.8s</span>
+                </div>
+
+                <div class="pipe-node active-pipe">
+                  <div class="pipe-icon-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="pipe-info">
+                    <span class="pipe-title">04 &middot; Deploy</span>
+                    <span class="pipe-detail">scp ed25519 payload</span>
+                  </div>
+                  <span class="pipe-duration">1.4s</span>
+                </div>
+
+                <div class="pipe-node active-pipe">
+                  <div class="pipe-icon-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="pipe-info">
+                    <span class="pipe-title">05 &middot; Reload</span>
+                    <span class="pipe-detail">mv -Tf &amp; nginx reload</span>
+                  </div>
+                  <span class="pipe-duration">0.5s</span>
+                </div>
+
+                <div class="pipe-node active-pipe">
+                  <div class="pipe-icon-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="pipe-info">
+                    <span class="pipe-title">06 &middot; Verify</span>
+                    <span class="pipe-detail">curl /health -&gt; 200 OK</span>
+                  </div>
+                  <span class="pipe-duration">0.2s</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Quick Runtime Specs -->
+            <div class="console-specs">
+              <div class="specs-header">
+                <span class="specs-heading">INFRASTRUCTURE ARCHITECTURE</span>
+                <span class="specs-badge">AZURE EAST US</span>
+              </div>
+              <div class="specs-list">
+                <div class="spec-row">
+                  <span class="spec-k">Cloud Platform</span>
+                  <span class="spec-v">Microsoft Azure (Standard_B1s)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-k">IaC Definition</span>
+                  <span class="spec-v">Terraform (7 resources, state locked)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-k">CI/CD Engine</span>
+                  <span class="spec-v">Jenkins Declarative Pipeline</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-k">Web Runtime</span>
+                  <span class="spec-v">Ubuntu 22.04 LTS + Nginx</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-k">Deployment Mode</span>
+                  <span class="spec-v highlight-green">Atomic Symlink (Zero Downtime)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-k">Security / Firewalls</span>
+                  <span class="spec-v">NSG: SSH (Port 22), HTTP (Port 80)</span>
+                </div>
+              </div>
+
+              <div class="specs-footer">
+                <div class="runtime-tag">
+                  <span class="pulse-dot"></span>
+                  <span>Pipeline active &middot; verified build artifact</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== ENGINEERING ARCHITECTURE ==================== -->
+    <section class="section section-border" id="overview">
+      <div class="container">
+        <div class="section-top">
+          <span class="section-label">01 &mdash; ARCHITECTURAL PATTERN</span>
+          <h2 class="section-title">Zero-Downtime Deployment Lifecycle</h2>
+          <p class="section-lead">
+            Eliminates error-prone manual server management with auditable, reproducible releases.
+          </p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="feature-card">
+            <div class="feature-icon feature-icon-red">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <h3>The Problem: Manual Deployment</h3>
+            <p>
+              Direct file modifications and manual restarts cause server configuration drift,
+              inconsistent permissions, and immediately disconnect in-flight HTTP requests.
+            </p>
+            <div class="card-footer-tag tag-muted">Legacy Antipattern</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon feature-icon-blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            </div>
+            <h3>The Solution: Automated CI/CD</h3>
+            <p>
+              Terraform guarantees infrastructure consistency. Jenkins validates code syntax,
+              stages immutable release folders, and tests artifacts before public routing.
+            </p>
+            <div class="card-footer-tag tag-accent">Terraform + Jenkins</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon feature-icon-green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>The Guarantee: Atomic Symlink Swap</h3>
+            <p>
+              <code>/var/www/app</code> is swapped atomically via <code>mv -Tf</code>.
+              Nginx gracefully reloads workers, keeping open connections intact with zero dropped requests.
+            </p>
+            <div class="card-footer-tag tag-success">Zero Downtime Verified</div>
+          </div>
+        </div>
+
+        <!-- Architecture Flow Diagram Strip -->
+        <div class="diagram-canvas">
+          <div class="diagram-step flow-node">
+            <div class="diagram-bubble">01</div>
+            <span class="diagram-name">Git Commit</span>
+            <span class="diagram-meta">developer push</span>
+          </div>
+          <div class="diagram-arrow">&rarr;</div>
+          <div class="diagram-step flow-node">
+            <div class="diagram-bubble">02</div>
+            <span class="diagram-name">GitHub SCM</span>
+            <span class="diagram-meta">webhook trigger</span>
+          </div>
+          <div class="diagram-arrow">&rarr;</div>
+          <div class="diagram-step flow-node diagram-step-active">
+            <div class="diagram-bubble">03</div>
+            <span class="diagram-name">Jenkins CI</span>
+            <span class="diagram-meta">tests &amp; packaging</span>
+          </div>
+          <div class="diagram-arrow">&rarr;</div>
+          <div class="diagram-step flow-node">
+            <div class="diagram-bubble">04</div>
+            <span class="diagram-name">SSH Release</span>
+            <span class="diagram-meta">ed25519 payload</span>
+          </div>
+          <div class="diagram-arrow">&rarr;</div>
+          <div class="diagram-step flow-node">
+            <div class="diagram-bubble">05</div>
+            <span class="diagram-name">Nginx Live</span>
+            <span class="diagram-meta">atomic symlink</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== INTERACTIVE PIPELINE INSPECTOR ==================== -->
+    <section class="section" id="pipeline">
+      <div class="container">
+        <div class="section-top">
+          <span class="section-label">02 &mdash; PIPELINE EXECUTION</span>
+          <h2 class="section-title">Interactive Stage Explorer</h2>
+          <p class="section-lead">
+            Select any stage below to inspect the actual shell commands executed by the declarative Jenkinsfile.
+          </p>
+        </div>
+
+        <!-- Interactive Stepper -->
+        <div class="stepper" id="pipeline-stepper">
+          <button class="step-btn active" data-stage="0" type="button">
+            <span class="step-badge">1</span>
+            <span class="step-name">Checkout</span>
+          </button>
+          <button class="step-btn" data-stage="1" type="button">
+            <span class="step-badge">2</span>
+            <span class="step-name">Validate</span>
+          </button>
+          <button class="step-btn" data-stage="2" type="button">
+            <span class="step-badge">3</span>
+            <span class="step-name">Test</span>
+          </button>
+          <button class="step-btn" data-stage="3" type="button">
+            <span class="step-badge">4</span>
+            <span class="step-name">Deploy</span>
+          </button>
+          <button class="step-btn" data-stage="4" type="button">
+            <span class="step-badge">5</span>
+            <span class="step-name">Reload</span>
+          </button>
+          <button class="step-btn" data-stage="5" type="button">
+            <span class="step-badge">6</span>
+            <span class="step-name">Verify</span>
+          </button>
+        </div>
+
+        <!-- Code Terminal View -->
+        <div class="terminal-shell" id="terminal-pane">
+          <div class="shell-bar">
+            <div class="shell-dots">
+              <span class="s-dot s-red"></span>
+              <span class="s-dot s-yellow"></span>
+              <span class="s-dot s-green"></span>
+            </div>
+            <div class="shell-title" id="stage-file">Jenkinsfile &mdash; Stage: Checkout</div>
+            <span class="shell-badge">BASH / GROOVY</span>
+          </div>
+          <div class="shell-content">
+            <pre><code id="stage-code">git rev-parse --short HEAD
+git rev-parse --abbrev-ref HEAD
+# Clones latest Git commit from main repository and records commit hash.</code></pre>
+            <div class="shell-note" id="stage-desc">
+              <strong>Stage Objective:</strong> Clones latest source code revision and records branch &amp; commit hash for the build metadata.
+            </div>
+          </div>
+        </div>
+
+        <!-- Why Reload Callout -->
+        <div class="engineering-callout">
+          <div class="callout-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="callout-text">
+            <h4>Engineering Detail: Graceful Reload vs Server Restart</h4>
+            <p>
+              Executing <code>systemctl restart nginx</code> abruptly drops all open TCP connections and active clients.
+              In contrast, <code>systemctl reload nginx</code> validates the syntax of <code>/etc/nginx/</code>, starts new worker processes
+              attached to the freshly symlinked release folder, and lets existing workers terminate gracefully only after finishing their in-flight requests.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TECH STACK (WITH OFFICIAL LOGOS) ==================== -->
+    <section class="section section-border" id="stack">
+      <div class="container">
+        <div class="section-top">
+          <span class="section-label">03 &mdash; TECHNOLOGY MATRIX</span>
+          <h2 class="section-title">Core DevOps Technologies</h2>
+          <p class="section-lead">
+            Industry-standard tools operating together across infrastructure, orchestrations, and web runtime.
+          </p>
+        </div>
+
+        <div class="tech-grid">
+          <!-- Terraform -->
+          <article class="tech-card">
+            <div class="tech-card-header">
+              <div class="tool-logo tool-terraform">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M1.44 0v7.575l6.561 3.79V3.788L1.44 0zm7.575 4.372v7.575l6.561 3.79V8.163L9.015 4.372zM16.59 8.745v7.575l6.561 3.79V12.535l-6.561-3.79zM9.015 12.535v7.575l6.561 3.79V16.325l-6.561-3.79z"/>
+                </svg>
+              </div>
+              <div class="tool-titles">
+                <h3>Terraform</h3>
+                <span class="tool-category">Infrastructure as Code</span>
+              </div>
+            </div>
+            <p>
+              Declaratively provisions the Azure Virtual Network, Subnet, NSG, Public IP, and Ubuntu VM.
+              Allows full teardown via <code>terraform destroy</code>.
+            </p>
+            <div class="tech-tags">
+              <span>provider.tf</span>
+              <span>main.tf</span>
+              <span>outputs.tf</span>
+              <span>cloud-init</span>
+            </div>
+          </article>
+
+          <!-- Microsoft Azure -->
+          <article class="tech-card">
+            <div class="tech-card-header">
+              <div class="tool-logo tool-azure">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13.05 4.24l-5.69 10.15 4.27 3.53 7.82-13.68H13.05zM5.38 15.22L1 23h9.61l3.35-7.78-8.58-10.0z"/>
+                </svg>
+              </div>
+              <div class="tool-titles">
+                <h3>Microsoft Azure</h3>
+                <span class="tool-category">Cloud Infrastructure</span>
+              </div>
+            </div>
+            <p>
+              Enterprise cloud hosting with Network Security Groups (NSG) restricting SSH to authorized IPs
+              while opening Port 80 for public traffic.
+            </p>
+            <div class="tech-tags">
+              <span>Standard_B1s</span>
+              <span>Virtual Network</span>
+              <span>NSG Firewall</span>
+              <span>Ubuntu 22.04</span>
+            </div>
+          </article>
+
+          <!-- Jenkins -->
+          <article class="tech-card">
+            <div class="tech-card-header">
+              <div class="tool-logo tool-jenkins">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11h3a3 3 0 0 1 3 3v2h-1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5H3v-2a3 3 0 0 1 3-3h3V9.5A4 4 0 0 1 8 6a4 4 0 0 1 4-4z"/>
+                  <circle cx="12" cy="6" r="1.5" fill="currentColor"/>
+                  <path d="M9 14h6v4H9z"/>
+                </svg>
+              </div>
+              <div class="tool-titles">
+                <h3>Jenkins</h3>
+                <span class="tool-category">CI/CD Orchestration</span>
+              </div>
+            </div>
+            <p>
+              Executes declarative pipelines with secret masking. Injects SSH deployment keys
+              from credentials store without exposing keys to source control.
+            </p>
+            <div class="tech-tags">
+              <span>Declarative</span>
+              <span>SSH Agent</span>
+              <span>Credentials Store</span>
+              <span>Artifact Archiving</span>
+            </div>
+          </article>
+
+          <!-- GitHub -->
+          <article class="tech-card">
+            <div class="tech-card-header">
+              <div class="tool-logo tool-github">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                </svg>
+              </div>
+              <div class="tool-titles">
+                <h3>GitHub</h3>
+                <span class="tool-category">Source Control &amp; Triggers</span>
+              </div>
+            </div>
+            <p>
+              Central repository hosting source code, Terraform configurations, and deployment scripts.
+              Pushes trigger automated Jenkins build webhooks.
+            </p>
+            <div class="tech-tags">
+              <span>Git Flow</span>
+              <span>Webhooks</span>
+              <span>Commit Auditing</span>
+              <span>Branch Rules</span>
+            </div>
+          </article>
+
+          <!-- Nginx -->
+          <article class="tech-card">
+            <div class="tech-card-header">
+              <div class="tool-logo tool-nginx">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0L1.605 6v12L12 24l10.395-6V6L12 0zm0 2.22l8.47 4.89v9.78L12 21.78l-8.47-4.89V7.11L12 2.22zM7.2 7.2v9.6h2.16v-5.28l5.28 5.28h2.16V7.2h-2.16v5.28L9.36 7.2H7.2z"/>
+                </svg>
+              </div>
+              <div class="tool-titles">
+                <h3>Nginx</h3>
+                <span class="tool-category">Web Server &amp; Symlink Host</span>
+              </div>
+            </div>
+            <p>
+              High-performance HTTP server serving static assets, handling zero-downtime reloads,
+              and exposing dedicated <code>/health</code> and <code>/build-info.txt</code> endpoints.
+            </p>
+            <div class="tech-tags">
+              <span>/health</span>
+              <span>/build-info.txt</span>
+              <span>Zero Downtime</span>
+              <span>Gzip Compression</span>
+            </div>
+          </article>
+
+          <!-- Docker -->
+          <article class="tech-card">
+            <div class="tech-card-header">
+              <div class="tool-logo tool-docker">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.186.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.186.186.186m5.893 2.715h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.136a.186.186 0 00-.186.185v1.888c0 .102.084.185.186.185m-2.928 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H2.208a.186.186 0 00-.186.185v1.888c0 .102.084.185.186.185m21.785.45c-.328-.198-.98-.328-1.636-.328-.35 0-.853.07-1.22.24-.26-.814-.94-1.423-1.78-1.554l-.44-.068-.26.356c-.503.68-.828 1.543-.888 2.453-.94-.03-2.735.163-3.834.693-.242-.32-.486-.63-.733-.923L9.8 9.38l-.48.423a10.82 10.82 0 00-2.45 3.325c-.71.05-1.58.23-2.42.59l-.49.21.19.5c.61 1.62 1.77 2.87 3.36 3.61 4.54 2.11 10.83 1.83 14.88-.69.21-.13.39-.28.56-.44l.32-.31-.19-.41c-.24-.52-.39-1.1-.42-1.72-.03-.78.19-1.47.62-1.95.42-.48.97-.73 1.58-.73h.36l.05-.36a2.6 2.6 0 00-.59-1.89"/>
+                </svg>
+              </div>
+              <div class="tool-titles">
+                <h3>Docker &amp; Compose</h3>
+                <span class="tool-category">Containerized Simulation</span>
+              </div>
+            </div>
+            <p>
+              Runs the local simulation cluster (`jenkins-cicd` + `web-vm`) on an isolated Docker bridge network
+              for complete local verification before cloud dispatch.
+            </p>
+            <div class="tech-tags">
+              <span>docker-compose</span>
+              <span>cicd-net</span>
+              <span>web-vm</span>
+              <span>Automate.ps1</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LIVE TELEMETRY OBSERVABILITY ==================== -->
+    <section class="section" id="deployment">
+      <div class="container">
+        <div class="section-top">
+          <span class="section-label">04 &mdash; OBSERVABILITY &amp; METRICS</span>
+          <h2 class="section-title">Live Deployment Telemetry</h2>
+          <p class="section-lead">
+            Real-time server probe querying <code>/health</code> and <code>/build-info.txt</code> directly from the web runtime.
+          </p>
+        </div>
+
+        <div class="telemetry-wrapper">
+          <!-- Main Observability Panel -->
+          <div class="obs-card telemetry-card">
+            <div class="obs-header">
+              <div class="obs-title-group">
+                <span class="obs-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </span>
+                <h3>Target Server Telemetry</h3>
+              </div>
+              <span class="pill pill-pending" id="status-pill">Checking...</span>
+            </div>
+
+            <div class="obs-table">
+              <div class="obs-row">
+                <span class="obs-label">Application Endpoint</span>
+                <div class="obs-value-group">
+                  <a class="obs-link" id="status-url" href="#" target="_blank" rel="noopener">&mdash;</a>
+                  <button class="copy-btn" data-copy-target="status-url" title="Copy endpoint URL" aria-label="Copy Application URL">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="obs-row">
+                <span class="obs-label">CI Build Number</span>
+                <span class="obs-value font-mono" id="status-build">&mdash;</span>
+              </div>
+
+              <div class="obs-row">
+                <span class="obs-label">Git Commit Revision</span>
+                <div class="obs-value-group">
+                  <span class="obs-value font-mono" id="status-commit">&mdash;</span>
+                  <button class="copy-btn" data-copy-target="status-commit" title="Copy Git commit hash" aria-label="Copy Commit Hash">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="obs-row">
+                <span class="obs-label">Deployment Timestamp (UTC)</span>
+                <span class="obs-value font-mono" id="status-time">&mdash;</span>
+              </div>
+
+              <div class="obs-row">
+                <span class="obs-label">Active Release ID</span>
+                <span class="obs-value font-mono" id="status-release">&mdash;</span>
+              </div>
+
+              <div class="obs-row">
+                <span class="obs-label">Deployed By</span>
+                <span class="obs-value" id="status-by">&mdash;</span>
+              </div>
+            </div>
+
+            <div class="obs-footer">
+              <button class="btn btn-sm btn-outline" id="refresh-btn" type="button">
+                <svg class="refresh-spinner" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span>Refresh Probe</span>
+              </button>
+              <span class="obs-timestamp" id="status-stamp">Initializing HTTP probe...</span>
+            </div>
+          </div>
+
+          <!-- Symlink Architecture Panel -->
+          <aside class="obs-aside explainer-card">
+            <h3>Atomic Symlink Architecture</h3>
+            <p class="aside-lead">
+              Nginx serves web assets from an active release symlink. Releases are immutable and isolated:
+            </p>
+
+            <div class="tree-preview">
+              <pre><code>/var/www/
+├── releases/
+│   ├── release-20261024190726/
+│   └── release-20261024193024/  <span class="tree-comment">&lt;-- immutable release</span>
+└── app <span class="tree-arrow">───────&gt;</span> releases/release-20261024193024/ <span class="tree-active">(active)</span></code></pre>
+            </div>
+
+            <ol class="aside-steps">
+              <li>
+                <strong>Stage:</strong> Release files copied to <code>/var/www/releases/release-&lt;id&gt;</code>.
+              </li>
+              <li>
+                <strong>Validate:</strong> Nginx configuration tested with <code>nginx -t</code>.
+              </li>
+              <li>
+                <strong>Atomic Switch:</strong> Symlink updated via <code>mv -Tf</code> in 1 kernel operation.
+              </li>
+              <li>
+                <strong>Graceful Reload:</strong> <code>systemctl reload nginx</code> serves new release without dropped requests.
+              </li>
+            </ol>
+          </aside>
+        </div>
       </div>
     </section>
   </main>
 
   <!-- ==================== FOOTER ==================== -->
   <footer class="footer">
-    <div class="footer__inner">
-      <div>
-        <p class="footer__title">Automated Deployment of a Web Application using CI/CD, Terraform, Azure and Jenkins</p>
-        <p class="footer__meta">
-          Provisioned with Terraform &middot; Delivered by Jenkins &middot; Hosted on Microsoft Azure
-        </p>
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <span class="footer-title">Automated Deployment of a Web Application</span>
+        <span class="footer-desc">DevOps Engineering Project &middot; Terraform &middot; Azure &middot; Jenkins &middot; Nginx</span>
       </div>
-      <p class="footer__meta">
-        Every push to GitHub &rarr; Jenkins &rarr; Ubuntu VM &rarr; Nginx &rarr; live website
-      </p>
+      <div class="footer-right">
+        <span class="footer-tag">Zero-Downtime CI/CD</span>
+      </div>
     </div>
   </footer>
 
