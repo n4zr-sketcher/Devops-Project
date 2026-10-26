@@ -280,7 +280,28 @@ You will see the fully deployed responsive web application with a live **Deploym
 
 ## ☁️ OPTION B: CLOUD MODE (MICROSOFT AZURE + TERRAFORM)
 
-When you are ready to deploy to a real Azure cloud Virtual Machine:
+> [!TIP]
+> ### 🚀 Recommended: 1-Click Zero-Touch Cloud Automation
+> You can deploy the entire cloud infrastructure and automatically connect Jenkins to Azure with one command:
+> ```powershell
+> cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup"
+> powershell -ExecutionPolicy Bypass -File .\automate-cloud.ps1
+> ```
+> This script automatically:
+> 1. Logs into Azure and selects your student subscription.
+> 2. Auto-detects your external IP for the NSG firewall.
+> 3. Deploys the 8 Azure resources via Terraform.
+> 4. Dynamically points Jenkins to the Azure VM public IP.
+> 5. Triggers the pipeline and opens your live Azure website in your browser!
+>
+> When finished, teardown anytime using:
+> ```powershell
+> powershell -ExecutionPolicy Bypass -File .\destroy-cloud.ps1
+> ```
+
+---
+
+### Manual Step-by-Step Cloud Deployment (Reference)
 
 ### 1. Install Azure CLI (if not already installed)
 In an elevated PowerShell window:

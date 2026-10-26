@@ -4,11 +4,15 @@ A complete, end-to-end DevOps project. The infrastructure on Microsoft Azure is 
 **as code** with Terraform, and a **Jenkins** pipeline automatically deploys a responsive
 web application to an **Ubuntu** VM running **Nginx** every time code is pushed to **GitHub**.
 
-> **Quickstart (1-Click Automated Setup):** You can run the entire pipeline locally without spending Azure credits. Run `powershell -ExecutionPolicy Bypass -File .\automate.ps1` to boot Docker, auto-configure Jenkins, and deploy to `http://localhost:8000`.
+> **⚡ 1-Click Automation Scripts:**
+> * **Method 1 (Local Docker Mode - Free / Offline):**
+>   `powershell -ExecutionPolicy Bypass -File .\automate.ps1`
+> * **Method 2 (Cloud Azure Mode - Live Deployment):**
+>   `powershell -ExecutionPolicy Bypass -File .\automate-cloud.ps1`
+> * **Cloud Teardown (Stop Azure Billing):**
+>   `powershell -ExecutionPolicy Bypass -File .\destroy-cloud.ps1`
 >
-> **Dual-Mode Architecture:**
-> 1. **Local Docker Mode (Free / Offline)**: Uses Docker Compose (`jenkins-cicd` + `web-vm`) for local continuous testing.
-> 2. **Cloud Mode (Microsoft Azure + Terraform)**: Provisions a real Ubuntu VM with Nginx in Azure and deploys live. Both modes share the exact same `Jenkinsfile` and `scripts/deploy.sh`.
+> **Dual-Mode Architecture:** Both modes share the exact same declarative `Jenkinsfile` and `scripts/deploy.sh`. Local mode deploys to a simulated Ubuntu VM (`web-vm` on port 8000), while Cloud mode provisions a real Azure VM and deploys to `http://<AZURE_PUBLIC_IP>/`.
 
 ---
 

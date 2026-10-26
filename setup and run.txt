@@ -266,10 +266,26 @@ Test Automatic CI/CD:
 ================================================================================
 PART B: CLOUD MODE (MICROSOFT AZURE + TERRAFORM) - LIVE CLOUD DEPLOYMENT
 ================================================================================
-NOTE: Terraform and Azure are 100% written, validated, and ready! 
-Local Docker mode (Part A) exists so you can test and demo for free without 
-consuming Azure cloud billing. When you are ready to deploy to a real Azure VM:
+⚡ FASTEST WAY: 1-COMMAND CLOUD AUTOMATION
+Just open PowerShell in this directory and run:
+   powershell -ExecutionPolicy Bypass -File .\automate-cloud.ps1
 
+What this single command does automatically:
+1. Verifies your Azure login & student subscription.
+2. Auto-detects your external IP and locks NSG SSH access.
+3. Automatically writes terraform.tfvars with your Azure settings.
+4. Provisions the Azure infrastructure (VM, VNet, Subnet, NSG, Public IP).
+5. Updates Jenkins VM_IP and host keys dynamically via API.
+6. Automatically triggers the Pipeline and deploys your website to Azure!
+7. Verifies http://<AZURE_PUBLIC_IP>/ and opens it in your default browser!
+
+To teardown cloud resources anytime (to stop billing):
+   powershell -ExecutionPolicy Bypass -File .\destroy-cloud.ps1
+   (or: .\automate-cloud.ps1 -Destroy)
+
+--------------------------------------------------------------------------------
+MANUAL STEP-BY-STEP REFERENCE (IF NOT USING automate-cloud.ps1):
+--------------------------------------------------------------------------------
 1. Install Azure CLI in elevated PowerShell (if not already installed):
    winget install Microsoft.AzureCLI --accept-package-agreements --accept-source-agreements
 
