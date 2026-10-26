@@ -303,6 +303,24 @@ Developer            GitHub             Jenkins              Azure VM           
    │                   │                  │                     │   GET /         │
 ```
 
+### 7.2 Dual-mode operating architecture
+
+To support continuous validation without incurring ongoing cloud expenses or requiring an active internet connection during project demonstrations, the system implements a dual-mode target architecture:
+
+1. **Cloud Mode (Microsoft Azure + Terraform)**:
+   - Target host is an Azure Ubuntu 22.04 LTS VM (`vm-devops-cicd`) provisioned via Terraform.
+   - Accessible over the public internet via Azure Public IP (`pip-devops-cicd`).
+   - Bootstrap automated through `cloud-init.yml.tftpl`.
+   - Security enforced via Azure Network Security Group (NSG) restricting SSH to the authorized developer IP.
+
+2. **Local Simulation Mode (Docker Compose + Automated Setup)**:
+   - Target host is a containerized Ubuntu 22.04 environment (`web-vm`) running on the internal `cicd-net` Docker network.
+   - Equipped with OpenSSH, Nginx, and systemd compatibility shim to mirror the Azure VM precisely.
+   - Initialized hands-free through `automate.ps1` and Jenkins Groovy init script (`jenkins/init.groovy.d/01-auto-setup.groovy`).
+   - Accessible locally at `http://localhost:8000` (web app) and `http://localhost:8080` (Jenkins).
+
+Both modes execute the identical declarative `Jenkinsfile` and `scripts/deploy.sh` without any code modifications, switching targets simply by changing the Jenkins `VM_IP` global property.
+
 ---
 
 ## 8. Infrastructure provisioning methodology
@@ -752,7 +770,7 @@ the build which was just deployed is the one being served.
 git init -b main
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/<username>/azure-terraform-jenkins-cicd.git
+git remote add origin https://github.com/n4zr-sketcher/Devops-Project.git
 git push -u origin main
 ```
 

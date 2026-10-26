@@ -64,9 +64,24 @@ The required dependencies on your Windows 10 machine:
 
 ---
 
-## ⚡ STEP-BY-STEP EXECUTION GUIDE (LOCAL DOCKER MODE)
+---
+
+## ⚡ STEP-BY-STEP EXECUTION GUIDE
+
+> [!TIP]
+> ### 🚀 Recommended: 1-Click Zero-Touch Automation
+> You can skip all manual steps! Open PowerShell in the project directory and run:
+> ```powershell
+> cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup"
+> powershell -ExecutionPolicy Bypass -File .\automate.ps1
+> ```
+> This automatically checks Docker, starts `jenkins-cicd` and `web-vm`, seeds admin credentials, creates the pipeline, triggers Build #1, and opens `http://localhost:8000` when complete!
+>
+> If you prefer to set up and inspect each component manually, follow the manual steps below.
 
 ---
+
+### MODE A: LOCAL DOCKER MODE (MANUAL REFERENCE)
 
 ### Step 0: Start Docker Desktop on Windows 10
 
@@ -95,7 +110,8 @@ The required dependencies on your Windows 10 machine:
 In PowerShell, navigate to the `jenkins` directory and launch the containers:
 
 ```powershell
-cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project\jenkins"
+cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\jenkins"
+# (or cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project\jenkins")
 docker compose up -d --build
 ```
 
@@ -279,7 +295,8 @@ az login
 
 ### 3. Configure Terraform Variables
 ```powershell
-cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project\terraform"
+cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\terraform"
+# (or cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project\terraform")
 Copy-Item terraform.tfvars.example terraform.tfvars
 ```
 Run the helper script to auto-fill your public IP into `terraform.tfvars`:

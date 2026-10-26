@@ -20,6 +20,8 @@ terraform {
 }
 
 provider "azurerm" {
+  resource_provider_registrations = "none"
+
   # `features` block is mandatory in AzureRM provider v4.
   features {
     resource_group {

@@ -264,9 +264,11 @@ Test Automatic CI/CD:
    http://localhost:8000 with zero downtime!
 
 ================================================================================
-PART B: CLOUD MODE (MICROSOFT AZURE + TERRAFORM) - OPTIONAL
+PART B: CLOUD MODE (MICROSOFT AZURE + TERRAFORM) - LIVE CLOUD DEPLOYMENT
 ================================================================================
-When ready to deploy to a real Azure cloud Virtual Machine:
+NOTE: Terraform and Azure are 100% written, validated, and ready! 
+Local Docker mode (Part A) exists so you can test and demo for free without 
+consuming Azure cloud billing. When you are ready to deploy to a real Azure VM:
 
 1. Install Azure CLI in elevated PowerShell (if not already installed):
    winget install Microsoft.AzureCLI --accept-package-agreements --accept-source-agreements

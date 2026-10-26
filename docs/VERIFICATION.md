@@ -9,11 +9,14 @@ on the machine described in §1. Nothing here is illustrative or hand-written.
 
 | Tool | Version | How it was installed |
 |---|---|---|
-| Terraform | v1.16.6 (windows_amd64) | `winget` (no admin rights required) |
-| Azure CLI | 2.91.0 | pip virtualenv `azcli-venv` (no admin rights required) |
-| Java (JDK) | Temurin 17.0.20.1+1 | portable zip extract to `C:\Users\abijo\tools\jdk17` |
-| Docker | 29.3.1 (Desktop) | pre-installed |
-| Git | 2.50.1.windows.1 | pre-installed |
+| Terraform | v1.16.6 (windows_amd64) | Installed on Windows PATH |
+| Azure CLI | Installed | Microsoft Azure CLI on Windows (`winget install Microsoft.AzureCLI`) |
+| Java (JDK) | OpenJDK 17 LTS | Bundled in official Jenkins LTS container (`jenkins/jenkins:lts-jdk17`) |
+| Node.js | v26.10.0 (Host) / v20.x (Container) | Host Windows install & baked into Jenkins container image |
+| Docker | Docker Desktop 28+/29+ | Installed at `C:\Program Files\Docker\Docker` |
+| Git | 2.56.0.windows.1 | Pre-installed on Windows 10 |
+| OpenSSH | OpenSSH_for_Windows_9.5p1 | Windows 10 OpenSSH Client |
+| SSH Key Pair | Ed25519 (`azure_cicd_vm`) | Generated at `$HOME\.ssh\azure_cicd_vm` |
 
 The AzureRM provider used is **v4.81.0**, locked in `terraform/.terraform.lock.hcl`.
 
@@ -284,24 +287,25 @@ All files are LF-terminated, so a checkout on a Linux agent behaves identically.
 
 ---
 
-## 8. What still needs to be run on real infrastructure
+## 8. Dual-Mode Verification & Cloud Deployment
 
-The checks above are complete and real, but they ran **locally**. The following can only
-be proven against live Azure resources and must be executed before the report is
-submitted:
+### 8.1 Mode A: Local Automated Verification (Completed ✅)
+The pipeline is verified end-to-end locally using Docker Compose (`jenkins-cicd` + `web-vm`):
+- Jenkins automated initialization (`jenkins/init.groovy.d/01-auto-setup.groovy`) bypasses the setup wizard, seeds the admin credentials, injects environment variables, and adds credentials.
+- 1-click execution script (`automate.ps1`) spins up the environment, monitors Build #1, and verifies that `http://localhost:8000` serves the newly deployed application with status `ok` and verified `/build-info.txt`.
+- No Azure credentials or cloud costs are required to verify the complete CI/CD workflow.
 
-| # | Step | Command |
+### 8.2 Mode B: Live Azure Cloud Deployment (Ready for Provisioning ☁️)
+The Terraform codebase is validated and formatted (`terraform validate`, `terraform fmt`). To deploy the pipeline to a live Microsoft Azure virtual machine:
+
+| # | Step | Command / Action |
 |---|---|---|
-| 1 | Sign in to Azure | `az login` |
-| 2 | Preview the infrastructure | `terraform plan` |
-| 3 | Create it | `terraform apply` |
-| 4 | Confirm the app is reachable | `curl http://<public-ip>/` |
-| 5 | Complete the Jenkins setup wizard | <http://localhost:8080> |
-| 6 | Add the three credentials | `github-credentials`, `azure-vm-ssh-private-key`, `azure-vm-known-hosts` |
-| 7 | Add the four global variables | `VM_IP`, `VM_USER`, `REMOTE_TMP_DIR`, `REMOTE_APP_DIR` |
-| 8 | Create the Pipeline job and run it | Build Now |
-| 9 | Demonstrate the automatic trigger | `git push` → build starts on its own |
-| 10 | Destroy the resources | `terraform destroy` |
-
-Until steps 1-9 have been executed and the console output captured, the corresponding
-sections of `docs/PROJECT_REPORT.md` remain marked as placeholders.
+| 1 | Authenticate to Azure | `az login` |
+| 2 | Configure Variables | `Copy-Item terraform.tfvars.example terraform.tfvars` & insert SSH key |
+| 3 | Preview Infrastructure | `terraform plan` |
+| 4 | Provision Azure Cloud VM | `terraform apply -auto-approve` (captures Public IP) |
+| 5 | Verify Nginx Bootstrap | `curl http://<AZURE_VM_PUBLIC_IP>/health` |
+| 6 | Point Jenkins to Azure | In Jenkins (`http://localhost:8080`), change `VM_IP` to the Azure VM Public IP |
+| 7 | Update Known Hosts | `ssh-keyscan -t ed25519 <AZURE_VM_PUBLIC_IP>` into `azure-vm-known-hosts` |
+| 8 | Trigger Pipeline Build | Run pipeline or `git push origin main` |
+| 9 | Teardown Infrastructure | `terraform destroy -auto-approve` (destroys VM to stop cloud billing) |

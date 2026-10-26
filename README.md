@@ -4,10 +4,11 @@ A complete, end-to-end DevOps project. The infrastructure on Microsoft Azure is 
 **as code** with Terraform, and a **Jenkins** pipeline automatically deploys a responsive
 web application to an **Ubuntu** VM running **Nginx** every time code is pushed to **GitHub**.
 
-> **Status:** the code in this repository is complete and ready to run. The sections marked
-> *"Expected output"* show what a successful run looks like - they are illustrative
-> examples, not captured results. Replace them with your own screenshots and console
-> output as you execute each phase (see the *Screenshots checklist* at the end).
+> **Quickstart (1-Click Automated Setup):** You can run the entire pipeline locally without spending Azure credits. Run `powershell -ExecutionPolicy Bypass -File .\automate.ps1` to boot Docker, auto-configure Jenkins, and deploy to `http://localhost:8000`.
+>
+> **Dual-Mode Architecture:**
+> 1. **Local Docker Mode (Free / Offline)**: Uses Docker Compose (`jenkins-cicd` + `web-vm`) for local continuous testing.
+> 2. **Cloud Mode (Microsoft Azure + Terraform)**: Provisions a real Ubuntu VM with Nginx in Azure and deploys live. Both modes share the exact same `Jenkinsfile` and `scripts/deploy.sh`.
 
 ---
 
@@ -91,30 +92,34 @@ web application to an **Ubuntu** VM running **Nginx** every time code is pushed 
 ## 2. Repository structure
 
 ```
-azure-terraform-jenkins-cicd/
-├── app/                                  # The web application (deployed to the VM)
+Devops-Project/
+├── app/                                  # Web application (HTML, CSS, JS)
 │   ├── index.html
 │   ├── style.css
 │   └── script.js
-├── terraform/                            # Infrastructure as Code
-│   ├── provider.tf
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   ├── cloud-init.yml.tftpl              # Nginx bootstrap (Terraform template)
-│   ├── terraform.tfvars.example          # safe template - committed
-│   └── terraform.tfvars                   # real values - GIT IGNORED
+├── terraform/                            # Infrastructure as Code (Azure)
+│   ├── provider.tf                       # AzureRM provider configuration
+│   ├── main.tf                           # 8 Azure resources (RG, VNet, Subnet, NSG, VM)
+│   ├── variables.tf                      # Input variables
+│   ├── outputs.tf                        # VM Public IP & connection strings
+│   ├── cloud-init.yml.tftpl              # Automated Nginx VM bootstrapper
+│   └── terraform.tfvars.example          # Sample variable definitions
 ├── scripts/
-│   ├── deploy.sh                         # runs ON the VM to publish a release
-│   └── update-ssh-cidr.ps1               # refreshes your IP in terraform.tfvars
+│   ├── deploy.sh                         # Zero-downtime atomic symlink deployment script
+│   └── update-ssh-cidr.ps1               # Auto-detects local IP for NSG firewall
 ├── jenkins/
-│   ├── Dockerfile                        # Jenkins image + ssh/curl/node tools
-│   └── docker-compose.yml                # controller on localhost:8080
+│   ├── Dockerfile                        # Jenkins image + SSH/Node/cURL tools
+│   ├── docker-compose.yml                # Multi-container setup (Jenkins + simulated web-vm)
+│   ├── init.groovy.d/                    # Jenkins zero-touch auto-configuration script
+│   └── web-vm/                           # Simulated Ubuntu 22.04 VM with Nginx & SSH
 ├── docs/
-│   └── PROJECT_REPORT.md                 # the college report
-├── Jenkinsfile                           # the CI/CD pipeline
-├── README.md                             # this file
-└── .gitignore
+│   ├── PROJECT_REPORT.md                 # Complete academic project report
+│   └── VERIFICATION.md                   # Real test evidence & toolchain audit
+├── automate.ps1                          # 1-Click PowerShell zero-touch local setup
+├── run_the_project.md                    # Comprehensive step-by-step runner guide
+├── setup and run.txt                     # Quick reference sheet
+├── Jenkinsfile                           # 6-stage Declarative CI/CD pipeline
+└── README.md                             # Documentation
 ```
 
 ---
@@ -166,7 +171,8 @@ az account set --subscription "<Your Subscription Name>"
 ### A.2 Create the real variable file and add your SSH key
 
 ```powershell
-cd "C:\Users\abijo\OneDrive\Desktop\DEV_OPS_PROJECT\azure-terraform-jenkins-cicd\terraform"
+cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\terraform"
+# or: cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project\terraform"
 
 Copy-Item .\terraform.tfvars.example .\terraform.tfvars
 ```
@@ -255,7 +261,7 @@ ssh -i "$env:USERPROFILE\.ssh\azure_cicd_vm" azureuser@<public_ip> "sudo tail -n
 > you ever spend Azure credit.
 
 ```powershell
-cd "C:\Users\abijo\OneDrive\Desktop\DEV_OPS_PROJECT\azure-terraform-jenkins-cicd\app"
+cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\app"
 python -m http.server 8000
 ```
 
@@ -274,7 +280,7 @@ Stop the server with `Ctrl+C`.
 ### C.1 Start the Jenkins controller
 
 ```powershell
-cd "C:\Users\abijo\OneDrive\Desktop\DEV_OPS_PROJECT\azure-terraform-jenkins-cicd\jenkins"
+cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\jenkins"
 docker compose up -d --build
 docker compose logs -f
 ```
@@ -337,13 +343,13 @@ properties* in newer versions) → **Add Environment Variable**, four times:
 > **Where:** Windows PowerShell, in the project root.
 
 ```powershell
-cd "C:\Users\abijo\OneDrive\Desktop\DEV_OPS_PROJECT\azure-terraform-jenkins-cicd"
+cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup"
 
 git add .
 git status                 # check that terraform.tfstate and *.tfvars are NOT listed
-git commit -m "Initial commit: Terraform, web app, Jenkins pipeline"
+git commit -m "Update project files for automated DevOps pipeline"
 git branch -M main
-git remote add origin https://github.com/<your-username>/azure-terraform-jenkins-cicd.git
+git remote add origin https://github.com/n4zr-sketcher/Devops-Project.git
 git push -u origin main
 ```
 
@@ -403,7 +409,7 @@ Under *Pipeline*, choose **Pipeline script from SCM**:
 | Field | Value |
 |-------|-------|
 | SCM | Git |
-| Repository URL | `https://github.com/<your-username>/azure-terraform-jenkins-cicd.git` |
+| Repository URL | `https://github.com/n4zr-sketcher/Devops-Project.git` |
 | Credentials | `github-credentials` |
 | Branch | `*/main` |
 | Script Path | `Jenkinsfile` |
@@ -592,7 +598,7 @@ or in the Jenkins credential store only.
 > **Where:** Windows PowerShell.
 
 ```powershell
-cd "C:\Users\abijo\OneDrive\Desktop\DEV_OPS_PROJECT\azure-terraform-jenkins-cicd\terraform"
+cd "c:\Users\Dell\OneDrive\Desktop\Devops Project\Devops-Project-backup\terraform"
 
 terraform destroy          # asks for confirmation - type "yes"
 ```
