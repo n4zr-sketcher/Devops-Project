@@ -122,3 +122,6 @@ runcmd:
   # --- proof of life for the report ---------------------------------------
   - [ sh, "-c", "echo \"[cloud-init] nginx bootstrap finished at $(date -u)\" | tee -a /var/log/cicd-bootstrap.log" ]
   - [ sh, "-c", "curl -fsS http://127.0.0.1/health || echo '[cloud-init] health check failed'" ]
+
+  # --- dual-port SSH (port 22 + port 443 to bypass campus Wi-Fi blocks) ---
+  - [ sh, "-c", "echo 'Port 22' >> /etc/ssh/sshd_config.d/custom_ports.conf && echo 'Port 443' >> /etc/ssh/sshd_config.d/custom_ports.conf && systemctl restart ssh" ]

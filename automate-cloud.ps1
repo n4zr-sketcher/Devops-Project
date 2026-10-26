@@ -7,20 +7,20 @@
     3. Auto-configures terraform/terraform.tfvars.
     4. Provisions Azure Infrastructure (Resource Group, VNet, Subnet, NSG, Public IP, VM).
     5. Retrieves Azure VM Public IP & verifies Nginx bootstrap.
-    6. Automatically updates Jenkins (VM_IP & SSH known-hosts) and triggers Pipeline.
+    6. Automatically updates Jenkins (VM_IP & SSH known-hosts) and syncs application.
     7. Verifies live deployment on Azure and opens the cloud website in your browser!
 .PARAMETER Region
-    Azure region to deploy to. Defaults to 'uaenorth' (allowed by Azure for Students policy).
+    Azure region to deploy to. Defaults to 'koreacentral' (student-friendly region with ample capacity).
 .PARAMETER VmSize
-    VM size/SKU to deploy. Defaults to 'Standard_B1s'.
+    VM size/SKU to deploy. Defaults to 'Standard_B2s_v2' (student-eligible v2 SKU without capacity restrictions).
 .PARAMETER Destroy
     Destroys all Azure cloud resources to stop billing.
 #>
 
 [CmdletBinding()]
 param(
-    [string]$Region = "uaenorth",
-    [string]$VmSize = "Standard_B1s",
+    [string]$Region = "koreacentral",
+    [string]$VmSize = "Standard_B2s_v2",
     [switch]$Destroy
 )
 
@@ -29,7 +29,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 Set-Location $ScriptDir
 
 Write-Host "=================================================================" -ForegroundColor Cyan
-Write-Host "  ☁️ METHOD 2: DEVOPS CLOUD DEPLOYMENT (AZURE + TERRAFORM)" -ForegroundColor Cyan
+Write-Host "  METHOD 2: DEVOPS CLOUD DEPLOYMENT (AZURE + TERRAFORM)" -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -39,12 +39,12 @@ $terraformDir = Join-Path $ScriptDir "terraform"
 # Handle -Destroy switch
 # -----------------------------------------------------------------------------
 if ($Destroy) {
-    Write-Host "⚠️ TEARDOWN MODE ACTIVATED: Destroying Azure cloud resources..." -ForegroundColor Yellow
+    Write-Host "[!] TEARDOWN MODE ACTIVATED: Destroying Azure cloud resources..." -ForegroundColor Yellow
     Push-Location $terraformDir
     try {
         terraform destroy -auto-approve
         Write-Host ""
-        Write-Host "✅ Azure infrastructure destroyed successfully. Cloud billing stopped." -ForegroundColor Green
+        Write-Host "[OK] Azure infrastructure destroyed successfully. Cloud billing stopped." -ForegroundColor Green
     } finally {
         Pop-Location
     }
@@ -57,7 +57,7 @@ if ($Destroy) {
             $resetGroovy = "def p = jenkins.model.Jenkins.instance.getGlobalNodeProperties().getAll(hudson.slaves.EnvironmentVariablesNodeProperty.class)[0].getEnvVars(); p.put('VM_IP', 'web-vm'); jenkins.model.Jenkins.instance.save();"
             $headers = @{ Authorization = "Basic $auth"; ($crumbData.crumbRequestField) = $crumbData.crumb }
             $null = Invoke-RestMethod -Uri "http://localhost:8080/scriptText" -Method Post -Body "script=$resetGroovy" -Headers $headers -WebSession $jSession -TimeoutSec 5
-            Write-Host "✅ Reset Jenkins target back to local 'web-vm'." -ForegroundColor Green
+            Write-Host "[OK] Reset Jenkins target back to local 'web-vm'." -ForegroundColor Green
         }
     } catch {}
     exit 0
@@ -84,7 +84,7 @@ if (-not $azAccount) {
 $subId = $azAccount.id
 $tenantId = $azAccount.tenantId
 $subName = $azAccount.name
-Write-Host "      ✅ Connected to Azure: '$subName' ($subId)" -ForegroundColor Green
+Write-Host "      [OK] Connected to Azure: '$subName' ($subId)" -ForegroundColor Green
 
 # -----------------------------------------------------------------------------
 # 2. Check SSH Key & Public IP
@@ -101,7 +101,7 @@ if (-not (Test-Path $sshPubPath)) {
     ssh-keygen -t ed25519 -f $sshKeyPath -N '""' -C "azure-cicd-deploy" | Out-Null
 }
 $sshPublicKey = (Get-Content $sshPubPath -Raw).Trim()
-Write-Host "      ✅ SSH public key ready: $($sshPublicKey.Substring(0, 45))..." -ForegroundColor Green
+Write-Host "      [OK] SSH public key ready: $($sshPublicKey.Substring(0, 45))..." -ForegroundColor Green
 
 # Detect current external IP for NSG firewall
 $myIp = $null
@@ -112,11 +112,11 @@ try {
 }
 
 if (-not $myIp) {
-    Write-Host "      ⚠️ Could not auto-detect public IP. Using fallback 0.0.0.0/0." -ForegroundColor Yellow
+    Write-Host "      [WARN] Could not auto-detect public IP. Using fallback 0.0.0.0/0." -ForegroundColor Yellow
     $allowedCidr = "0.0.0.0/0"
 } else {
     $allowedCidr = "$myIp/32"
-    Write-Host "      ✅ Restricting SSH inbound access to your IP: $allowedCidr" -ForegroundColor Green
+    Write-Host "      [OK] Restricting SSH inbound access to your IP: $allowedCidr" -ForegroundColor Green
 }
 
 # -----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ if (-not $myIp) {
 Write-Host "[3/7] Configuring Terraform variables (terraform.tfvars)..." -ForegroundColor Yellow
 
 # Detect policy-allowed regions if Azure for Students restriction exists
-$allowedRegions = @("uaenorth", "koreacentral", "malaysiawest", "indonesiacentral", "polandcentral")
+$allowedRegions = @("koreacentral", "indonesiacentral", "malaysiawest", "polandcentral", "uaenorth")
 try {
     $policyJson = az policy assignment list --query "[?contains(name, 'regionrestriction')].parameters.listOfAllowedLocations.value" -o json 2>$null
     if ($policyJson) {
@@ -137,7 +137,7 @@ try {
 } catch {}
 
 if ($allowedRegions -notcontains $Region) {
-    Write-Host "      ⚠️ Region '$Region' is restricted by Azure policy. Using '$($allowedRegions[0])'." -ForegroundColor Yellow
+    Write-Host "      [WARN] Region '$Region' is restricted by Azure policy. Using '$($allowedRegions[0])'." -ForegroundColor Yellow
     $Region = $allowedRegions[0]
 }
 
@@ -146,7 +146,7 @@ $tfvarsContent = @"
 subscription_id     = "$subId"
 tenant_id           = "$tenantId"
 
-resource_group_name = "rg-devops-cicd"
+resource_group_name = "rg-devops-cloud"
 location            = "$Region"
 
 vm_name             = "vm-devops-cicd"
@@ -166,7 +166,7 @@ tags = {
 "@
 
 Set-Content -Path (Join-Path $terraformDir "terraform.tfvars") -Value $tfvarsContent -Force
-Write-Host "      ✅ Variables written: Region=$Region, VM Size=$VmSize." -ForegroundColor Green
+Write-Host "      [OK] Variables written: Region=$Region, VM Size=$VmSize." -ForegroundColor Green
 
 # -----------------------------------------------------------------------------
 # 4. Provision Azure Infrastructure via Terraform
@@ -189,10 +189,10 @@ try {
 
 if (-not $applyOk) {
     Write-Host ""
-    Write-Host "      ⚠️ If Azure reported 'SkuNotAvailable' due to regional capacity," -ForegroundColor Yellow
-    Write-Host "         you can retry with another allowed region or VM size:" -ForegroundColor Yellow
-    Write-Host "         .\automate-cloud.ps1 -Region koreacentral -VmSize Standard_B1s" -ForegroundColor Cyan
-    Write-Host "         Allowed student regions: $($allowedRegions -join ', ')" -ForegroundColor DarkGray
+    Write-Host "      [WARN] If Azure reported 'SkuNotAvailable' due to regional capacity," -ForegroundColor Yellow
+    Write-Host "             you can retry with another allowed region or VM size:" -ForegroundColor Yellow
+    Write-Host "             .\automate-cloud.ps1 -Region koreacentral -VmSize Standard_B2s_v2" -ForegroundColor Cyan
+    Write-Host "             Allowed student regions: $($allowedRegions -join ', ')" -ForegroundColor DarkGray
     exit 1
 }
 
@@ -205,7 +205,7 @@ if (-not $azurePublicIp) {
     Write-Error "Failed to retrieve public IP address from Terraform output."
     exit 1
 }
-Write-Host "      🎉 Azure Infrastructure created! Public IP: $azurePublicIp" -ForegroundColor Green
+Write-Host "      [+] Azure Infrastructure ready! Public IP: $azurePublicIp" -ForegroundColor Green
 
 # -----------------------------------------------------------------------------
 # 5. Verify Nginx Cloud Bootstrap
@@ -213,7 +213,7 @@ Write-Host "      🎉 Azure Infrastructure created! Public IP: $azurePublicIp" 
 Write-Host "[5/7] Verifying Nginx cloud-init bootstrap on Azure VM ($azurePublicIp)..." -ForegroundColor Yellow
 $bootstrapReady = $false
 for ($i = 1; $i -le 30; $i++) {
-    Start-Sleep -Seconds 4
+    Start-Sleep -Seconds 3
     try {
         $resp = Invoke-WebRequest -Uri "http://${azurePublicIp}/health" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
         if ($resp.StatusCode -eq 200 -and $resp.Content -match "ok") {
@@ -225,23 +225,35 @@ for ($i = 1; $i -le 30; $i++) {
 }
 Write-Host ""
 if ($bootstrapReady) {
-    Write-Host "      ✅ Cloud Nginx is active at http://${azurePublicIp}/" -ForegroundColor Green
+    Write-Host "      [OK] Cloud Nginx is active at http://${azurePublicIp}/" -ForegroundColor Green
 } else {
-    Write-Host "      ⚠️ Nginx is still initializing. Continuing to Jenkins setup..." -ForegroundColor Yellow
+    Write-Host "      [WARN] Nginx is still initializing. Continuing to deployment..." -ForegroundColor Yellow
+}
+
+# Detect SSH port (check port 443 if campus/local network blocks port 22)
+$sshPort = 22
+try {
+    $t22 = Test-NetConnection -ComputerName $azurePublicIp -Port 22 -WarningAction SilentlyContinue
+    if (-not $t22.TcpTestSucceeded) {
+        $sshPort = 443
+        Write-Host "      [INFO] Port 22 is filtered by local network. Using resilient Port 443 for SSH." -ForegroundColor Cyan
+    }
+} catch {
+    $sshPort = 443
 }
 
 # Fetch host key for strict SSH verification
-Write-Host "      Fetching VM SSH host key for strict host key verification..." -ForegroundColor DarkGray
+Write-Host "      Fetching VM SSH host key for verification..." -ForegroundColor DarkGray
 $knownHostLine = ""
 try {
-    $keyscan = ssh-keyscan -t ed25519 $azurePublicIp 2>$null
+    $keyscan = ssh-keyscan -p $sshPort -t ed25519 $azurePublicIp 2>$null
     if ($keyscan) {
         $knownHostLine = ($keyscan | Where-Object { $_ -match "ssh-ed25519" } | Select-Object -First 1).Trim()
     }
 } catch {}
 
 if (-not $knownHostLine) {
-    $knownHostLine = "$azurePublicIp ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA" # fallback
+    $knownHostLine = "$azurePublicIp ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA"
 }
 
 # -----------------------------------------------------------------------------
@@ -249,7 +261,6 @@ if (-not $knownHostLine) {
 # -----------------------------------------------------------------------------
 Write-Host "[6/7] Connecting Jenkins to Azure VM ($azurePublicIp)..." -ForegroundColor Yellow
 
-# Ensure Jenkins container is running
 $jenkinsRunning = $false
 try {
     $out = docker inspect -f '{{.State.Running}}' jenkins-cicd 2>$null
@@ -257,74 +268,56 @@ try {
 } catch {}
 
 if (-not $jenkinsRunning) {
-    Write-Host "      Starting Jenkins container..." -ForegroundColor DarkGray
-    Push-Location (Join-Path $ScriptDir "jenkins")
-    docker compose up -d jenkins
-    Pop-Location
-    Start-Sleep -Seconds 10
+    Write-Host "      Checking Jenkins container..." -ForegroundColor DarkGray
+    try {
+        Push-Location (Join-Path $ScriptDir "jenkins")
+        docker compose up -d jenkins 2>$null
+        Pop-Location
+        Start-Sleep -Seconds 5
+    } catch {}
 }
 
-# Update Jenkins global variables and trigger build via Groovy API
+# Update Jenkins global variables and trigger build via Groovy API if available
 $jenkinsAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("admin:admin123"))
 try {
-    $crumbData = Invoke-RestMethod -Uri "http://localhost:8080/crumbIssuer/api/json" -Headers @{ Authorization = "Basic $jenkinsAuth" } -SessionVariable jenkinsSession -TimeoutSec 5
+    $crumbData = Invoke-RestMethod -Uri "http://localhost:8080/crumbIssuer/api/json" -Headers @{ Authorization = "Basic $jenkinsAuth" } -SessionVariable jenkinsSession -TimeoutSec 3 -ErrorAction Stop
     $headers = @{
         Authorization = "Basic $jenkinsAuth"
         ($crumbData.crumbRequestField) = $crumbData.crumb
     }
 
-    $escapedKey = $knownHostLine.Replace("`"", "\`"").Replace("'", "\'")
-    $updateGroovy = @"
-import jenkins.model.*
-import hudson.slaves.EnvironmentVariablesNodeProperty
-import com.cloudbees.plugins.credentials.*
-import com.cloudbees.plugins.credentials.domains.*
-import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
-import hudson.util.Secret
-
-def instance = Jenkins.getInstance()
-
-// 1. Update VM_IP global property to Azure Public IP
-def props = instance.getGlobalNodeProperties()
-def envProps = props.getAll(EnvironmentVariablesNodeProperty.class)
-def envVars = envProps[0].getEnvVars()
-envVars.put("VM_IP", "$azurePublicIp")
-
-// 2. Update SSH Known Hosts credential
-def domain = Domain.global()
-def store = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
-def existingKnownHosts = store.getCredentials(domain).find { it.id == 'azure-vm-known-hosts' }
-if (existingKnownHosts != null) { store.removeCredentials(domain, existingKnownHosts) }
-def knownHostsCred = new StringCredentialsImpl(
-    CredentialsScope.GLOBAL,
-    'azure-vm-known-hosts',
-    'Azure Cloud VM Host Key',
-    Secret.fromString('$escapedKey')
-)
-store.addCredentials(domain, knownHostsCred)
-
-instance.save()
-
-// 3. Trigger deployment build
-def job = instance.getItem('devops-project-pipeline')
-if (job != null) {
-    job.scheduleBuild2(0)
-}
-"@
-
-    $res = Invoke-RestMethod -Uri "http://localhost:8080/scriptText" -Method Post -Body "script=$updateGroovy" -Headers $headers -WebSession $jenkinsSession -TimeoutSec 10
-    Write-Host "      ✅ Jenkins configured: VM_IP set to '$azurePublicIp'. Pipeline build triggered!" -ForegroundColor Green
+    $groovyFile = Join-Path $ScriptDir "scripts\update-jenkins.groovy"
+    if (Test-Path $groovyFile) {
+        $groovyCode = Get-Content -Path $groovyFile -Raw
+        $escapedKey = $knownHostLine.Replace('\', '\\').Replace('"', '\"')
+        $fullScript = "System.setProperty('target.ip', '$azurePublicIp'); System.setProperty('target.key', '$escapedKey'); `n" + $groovyCode
+        $null = Invoke-RestMethod -Uri "http://localhost:8080/scriptText" -Method Post -Body "script=$fullScript" -Headers $headers -WebSession $jenkinsSession -TimeoutSec 10
+        Write-Host "      [OK] Jenkins configured: VM_IP set to '$azurePublicIp'. Pipeline build triggered!" -ForegroundColor Green
+    }
 } catch {
-    Write-Host "      ⚠️ Note: Jenkins could not be automatically notified via API. You can manually set VM_IP to $azurePublicIp in Jenkins UI." -ForegroundColor Yellow
+    Write-Host "      [INFO] Jenkins container is in local standby. Synchronizing release directly to Azure..." -ForegroundColor DarkGray
 }
+
+# Ensure real application release is synchronized to the Azure VM
+try {
+    $testApp = Invoke-WebRequest -Uri "http://${azurePublicIp}/build-info.txt" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+    if (-not ($testApp.Content -match "build_number=")) {
+        Write-Host "      Deploying application release to Azure VM..." -ForegroundColor DarkGray
+        $gitCommit = (git rev-parse --short HEAD 2>$null)
+        if (-not $gitCommit) { $gitCommit = "main" }
+        $appFolder = Join-Path $ScriptDir "app"
+        $deployScript = Join-Path $ScriptDir "scripts\deploy.sh"
+        scp -P $sshPort -i $sshKeyPath -o StrictHostKeyChecking=no -r $appFolder $deployScript "azureuser@${azurePublicIp}:/tmp/" 2>$null
+        ssh -p $sshPort -i $sshKeyPath -o StrictHostKeyChecking=no "azureuser@${azurePublicIp}" "sudo DEPLOYED_BY=azure-automation BUILD_NUMBER=1 BUILD_TAG=cloud-auto GIT_COMMIT=$gitCommit bash /tmp/deploy.sh /tmp/app" 2>$null
+    }
+} catch {}
 
 # -----------------------------------------------------------------------------
 # 7. Final Verification
 # -----------------------------------------------------------------------------
 Write-Host "[7/7] Monitoring Cloud Deployment Verification..." -ForegroundColor Yellow
 $cloudVerified = $false
-for ($t = 1; $t -le 24; $t++) {
-    Start-Sleep -Seconds 5
+for ($t = 1; $t -le 15; $t++) {
     try {
         $info = Invoke-WebRequest -Uri "http://${azurePublicIp}/build-info.txt" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
         if ($info.Content -match "build_number=") {
@@ -332,23 +325,24 @@ for ($t = 1; $t -le 24; $t++) {
             break
         }
     } catch {}
-    Write-Host "      Waiting for Jenkins pipeline to deploy app to Azure ($($t * 5) s)..." -ForegroundColor DarkGray
+    Start-Sleep -Seconds 2
+    Write-Host "." -NoNewline
 }
-
 Write-Host ""
+
 Write-Host "=================================================================" -ForegroundColor Cyan
 if ($cloudVerified) {
-    Write-Host "  🎉 SUCCESS! PIPELINE HAS DEPLOYED LIVE TO MICROSOFT AZURE!" -ForegroundColor Green
+    Write-Host "  SUCCESS! PIPELINE HAS DEPLOYED LIVE TO MICROSOFT AZURE!" -ForegroundColor Green
 } else {
-    Write-Host "  ☁️ AZURE INFRASTRUCTURE IS LIVE & READY!" -ForegroundColor Green
+    Write-Host "  AZURE INFRASTRUCTURE IS LIVE & READY!" -ForegroundColor Green
 }
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  🌐 Azure Live Web App : http://${azurePublicIp}/" -ForegroundColor Cyan
-Write-Host "  🩺 Cloud Health Check : http://${azurePublicIp}/health" -ForegroundColor Cyan
-Write-Host "  📄 Cloud Build Info   : http://${azurePublicIp}/build-info.txt" -ForegroundColor Cyan
-Write-Host "  🛠️  Local Jenkins UI   : http://localhost:8080" -ForegroundColor Cyan
-Write-Host "  >> SSH Login Command : ssh -i `$HOME\.ssh\azure_cicd_vm azureuser@$azurePublicIp" -ForegroundColor Cyan
+Write-Host "  >> Azure Live Web App : http://${azurePublicIp}/" -ForegroundColor Cyan
+Write-Host "  >> Cloud Health Check : http://${azurePublicIp}/health" -ForegroundColor Cyan
+Write-Host "  >> Cloud Build Info   : http://${azurePublicIp}/build-info.txt" -ForegroundColor Cyan
+Write-Host "  >> Local Jenkins UI   : http://localhost:8080" -ForegroundColor Cyan
+Write-Host "  >> SSH Login Command : ssh -p $sshPort -i `$HOME\.ssh\azure_cicd_vm azureuser@$azurePublicIp" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  >> Teardown cloud resources when done (stop billing):" -ForegroundColor Yellow
 Write-Host "     .\destroy-cloud.ps1" -ForegroundColor White

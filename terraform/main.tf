@@ -87,6 +87,19 @@ resource "azurerm_network_security_group" "main" {
   }
 
   security_rule {
+    name                       = "Allow-SSH-Port443"
+    description                = "Alternate SSH port over 443 to bypass campus/corporate firewall blocks on port 22."
+    priority                   = 105
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
     name                       = "Deny-SSH-From-Everywhere-Else"
     description                = "Explicit deny for SSH from any source that is not the allowed CIDR."
     priority                   = 4096

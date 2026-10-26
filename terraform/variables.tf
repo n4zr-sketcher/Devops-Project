@@ -31,7 +31,7 @@ variable "tenant_id" {
 variable "resource_group_name" {
   description = "Name of the Azure Resource Group that holds every resource."
   type        = string
-  default     = "rg-devops-cicd"
+  default     = "rg-devops-cloud"
 
   validation {
     condition     = length(var.resource_group_name) > 0 && length(var.resource_group_name) <= 90
@@ -42,7 +42,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region where all resources are created."
   type        = string
-  default     = "eastus"
+  default     = "koreacentral"
 
   validation {
     condition     = can(regex("^[a-z0-9]+$", var.location))
@@ -146,12 +146,11 @@ variable "vm_computer_name" {
 
 variable "vm_size" {
   description = <<-EOT
-    Azure VM size. Default Standard_B1ls is the cheapest Linux VM and is more
-    than enough for Nginx serving static files. Use Standard_B2s if you also
-    want to run heavier workloads on the same machine.
+    Azure VM size. Default Standard_B2s_v2 is student-eligible and widely available
+    in policy-permitted Azure regions without capacity restrictions.
   EOT
   type        = string
-  default     = "Standard_B1ls"
+  default     = "Standard_B2s_v2"
 }
 
 variable "admin_username" {
