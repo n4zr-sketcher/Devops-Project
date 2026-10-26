@@ -348,11 +348,11 @@ Write-Host "  🌐 Azure Live Web App : http://${azurePublicIp}/" -ForegroundCol
 Write-Host "  🩺 Cloud Health Check : http://${azurePublicIp}/health" -ForegroundColor Cyan
 Write-Host "  📄 Cloud Build Info   : http://${azurePublicIp}/build-info.txt" -ForegroundColor Cyan
 Write-Host "  🛠️  Local Jenkins UI   : http://localhost:8080" -ForegroundColor Cyan
-Write-Host "  🔑 SSH Access Command : ssh -i `"`$HOME\.ssh\azure_cicd_vm`" azureuser@$azurePublicIp" -ForegroundColor Cyan
+Write-Host "  >> SSH Login Command : ssh -i `$HOME\.ssh\azure_cicd_vm azureuser@$azurePublicIp" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  💡 To destroy cloud resources when done (stop billing):" -ForegroundColor Yellow
-Write-Host "     .\automate-cloud.ps1 -Destroy" -ForegroundColor White
-Write-Host "     (or: cd terraform; terraform destroy -auto-approve)" -ForegroundColor DarkGray
+Write-Host "  >> Teardown cloud resources when done (stop billing):" -ForegroundColor Yellow
+Write-Host "     .\destroy-cloud.ps1" -ForegroundColor White
+Write-Host "     (or: powershell -ExecutionPolicy Bypass -File .\automate-cloud.ps1 -Destroy)" -ForegroundColor DarkGray
 Write-Host ""
 
 # Open in browser
