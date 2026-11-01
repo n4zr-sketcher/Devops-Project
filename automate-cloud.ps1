@@ -248,7 +248,12 @@ $knownHostLine = ""
 try {
     $keyscan = ssh-keyscan -p $sshPort -t ed25519 $azurePublicIp 2>$null
     if ($keyscan) {
-        $knownHostLine = ($keyscan | Where-Object { $_ -match "ssh-ed25519" } | Select-Object -First 1).Trim()
+        $match = $keyscan | Where-Object { $_ -match "ssh-ed25519" } | Select-Object -First 1
+        if ($match) { $knownHostLine = $match.Trim() }
+    }
+    if (-not $knownHostLine -and (Test-Path "$env:USERPROFILE\.ssh\known_hosts")) {
+        $cached = Get-Content "$env:USERPROFILE\.ssh\known_hosts" | Where-Object { $_ -match [regex]::Escape($azurePublicIp) -and $_ -match "ssh-ed25519" } | Select-Object -First 1
+        if ($cached) { $knownHostLine = $cached.Trim() }
     }
 } catch {}
 
@@ -291,7 +296,8 @@ try {
         $groovyCode = Get-Content -Path $groovyFile -Raw
         $escapedKey = $knownHostLine.Replace('\', '\\').Replace('"', '\"')
         $fullScript = "System.setProperty('target.ip', '$azurePublicIp'); System.setProperty('target.key', '$escapedKey'); `n" + $groovyCode
-        $null = Invoke-RestMethod -Uri "http://localhost:8080/scriptText" -Method Post -Body "script=$fullScript" -Headers $headers -WebSession $jenkinsSession -TimeoutSec 10
+        $body = @{ script = $fullScript }
+        $null = Invoke-RestMethod -Uri "http://localhost:8080/scriptText" -Method Post -Body $body -Headers $headers -WebSession $jenkinsSession -TimeoutSec 10
         Write-Host "      [OK] Jenkins configured: VM_IP set to '$azurePublicIp'. Pipeline build triggered!" -ForegroundColor Green
     }
 } catch {
